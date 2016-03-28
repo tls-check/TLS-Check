@@ -2,8 +2,8 @@
 
 TLS-Check is 
 
-a) a framework for collecting and summarizing arbitrary key figures for a lot of domains and their running servers (usually Web- and Mailserver) 
-b) a software for analyzing and summarizing the security and encryption of given domains, e.g. supported SSL/TLS-Versions and cipher suites.
+1. a framework for collecting and summarizing arbitrary key figures for a lot of domains and their running servers (usually Web- and Mailserver) 
+2. a software for analyzing and summarizing the security and encryption of given domains, e.g. supported SSL/TLS-Versions and cipher suites.
 
 It's primary goal is to get key figures about SSL/TLS connections. It can count how many servers support encryption or not, good or weak SSL/TLS-Versions, good or weak cipher suites, how many websites or mailservers are vulnerable to security problems like heartbleed, how many support IPv6, how many support all recommendations of the BSI or Bettercrypto project and much much more.
 
