@@ -38,7 +38,7 @@ There are a lot of tools, which check servers for their SSL/TLS capabilities (e.
 
 ## Author
 
-TLS-Check is written by Alvar C.H. Freude.
+TLS-Check is written by [Alvar C.H. Freude](http://alvar.a-blast.org/).
 
 Development contracted by Chamber of Commerce and Industry of the Stuttgart (Germany) Region and its committee of information technology, information services and telecommunication.
 

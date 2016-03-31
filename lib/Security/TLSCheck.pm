@@ -33,56 +33,9 @@ TODO!
 
 =head1 DESCRIPTION
 
+TODO: Write Description!
 
-
-Make easy things easy and hard things possible – reliable, testable.
-
-
-
-
-
-Struktur:
-
-  Security::TLSCheck                Steuerung, basisklasse, CLI, ...
-  Security::TLSCheck::
-  
-  Security::TLSCheck::Checks        Basisklasse für checks
-  Security::TLSCheck::Checks::DNS   DNS-Checks
-  
-
-
-jeder check hat:
-
-  Name
-  Beschreibung
-  Ergebnis
-
-
-
-  Datenstruktur für 1 Domain:
-  
-  
-  {
-  name       => "",             # wie vom file
-  domain     => "",
-  
-  host_www   => "",
-  host_mx    => [],
-  
-
-  starttimte => 
-  endtime    => 
-  
-  
-  
-  checks     => [],
-  
-  
-  
-  }
-
-
-  Globale Datenstruktur:
+Uups!
 
 
 =cut
@@ -200,46 +153,6 @@ Alvar C.H. Freude, C<< <"alvar at a-blast.org"> >>
 
 http://alvar.a-blast.org/
 
-....
-
-#
-#=head1 BUGS
-#
-#Please report any bugs or feature requests to C<bug-tls-check at rt.cpan.org>, or through
-#the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=TLS-Check>.  I will be notified, and then you'll
-#automatically be notified of progress on your bug as I make changes.
-#
-#
-#
-#
-#=head1 SUPPORT
-#
-#You can find documentation for this module with the perldoc command.
-#
-#    perldoc Security::TLSCheck
-#
-#
-#You can also look for information at:
-#
-#=over 4
-#
-#=item * RT: CPAN's request tracker (report bugs here)
-#
-#L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=TLS-Check>
-#
-#=item * AnnoCPAN: Annotated CPAN documentation
-#
-#L<http://annocpan.org/dist/TLS-Check>
-#
-#=item * CPAN Ratings
-#
-#L<http://cpanratings.perl.org/d/TLS-Check>
-#
-#=item * Search CPAN
-#
-#L<http://search.cpan.org/dist/TLS-Check/>
-#
-#=back
 
 
 =head1 ACKNOWLEDGEMENTS
@@ -248,7 +161,12 @@ http://alvar.a-blast.org/
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2014 Alvar C.H. Freude, http://alvar.a-blast.org/
-Copyright 2014 Industrie- und Handelskammer (IHK) Region Stuttgart, https://www.stuttgart.ihk24.de/
+
+Development contracted by Chamber of Commerce and Industry of the 
+Stuttgart (Germany) Region and its committee of information technology, 
+information services and telecommunication.
+
+https://www.stuttgart.ihk24.de/
 
 
 This program is free software; you can redistribute it and/or modify it
