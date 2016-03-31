@@ -18,3 +18,16 @@ nytprof.out
 *.o
 *.bs
 /_eumm/
+.lwpcookies
+Security-TLS-Check-*
+Security-TLS-Check-*.tar.gz
+/tmp/
+/work/
+/logs/
+/ext-doc/
+/result/
+out.html
+run-localdummy.sh
+testresult.csv
+get-results.sh
+/more-testdomains/
