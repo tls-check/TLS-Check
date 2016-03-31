@@ -1,0 +1,19 @@
+[InputOutput::RequireCheckedSyscalls]
+functions = :builtins
+exclude_functions = print
+
+
+[Subroutines::ProhibitUnusedPrivateSubroutines]
+private_name_regex = _(?!build_)\w+
+
+
+[CodeLayout::RequireTidyCode]
+perltidyrc = t/perltidyrc
+
+[RegularExpressions::RequireExtendedFormatting]
+minimum_regex_length_to_complain_about = 4
+strict = 0
+
+[BuiltinFunctions::ProhibitComplexMappings]
+max_statements = 2
+

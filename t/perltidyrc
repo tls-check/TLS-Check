@@ -1,0 +1,95 @@
+#
+# Perltidy-Optionen
+# ================= 
+#
+# Installation:
+# -------------
+#
+# Diese Datei als ".perltidyrc" ins Homeverzeichnis legen (Unix)
+#
+#
+# Wesentliche Aenderungen gegenueber Original:
+# --------------------------------------------
+#
+# Oeffnende und schliesende Klammern sind auf der gleichen Ebene
+# wie der Block
+#
+# Einrueckung drei Zeichen
+# 
+#
+# Siehe auch:
+# -----------
+#
+# Perltidy: http://search.cpan.org/~shancock/Perl-Tidy/bin/perltidy
+#           http://search.cpan.org/~evdb/Test-PerlTidy/lib/Test/PerlTidy.pm
+#
+#
+# Autor:
+# ------
+#
+# Alvar Freude, http://alvar.a-blast.org/ alvar@a-blast.org
+#
+#
+#
+# PBP .perltidyrc file
+
+-l=130      # Zeilenlaenge auf 110 im normallfall begrenzen
+            # lange Zeilen ragen damit ueber die ueblichen 80 
+            # Zeichen raus, werden aber auch nicht gleich abgeschnitten
+
+-i=3        # Einrueckung: 3 Zeichen (default: 4)
+-ci=3       # Einrueckung beim Umbruch einer Zeile (Default: 2)
+
+-lp         # line-up-parantheses (Klammerinhalte einruecken)
+-cti=1      # schliessendes auf oefnenhoehe
+-bli        # oeffnende klammern iin naechster zeile und auf hoehe des Blocks         
+
+-nolq       # lange Quote-Zeilen NICHT nach links zurueck-ruecken
+-nola       # lables NICHT nach links ausruecken
+
+#-pt=2       # keine leerzeichen bei oeffnenden/schliessenden klammern
+
+-bbb        # fuege vor Bloecken ein Leerzeichen ein, ...
+-lbl=3      # ... wenn diese mind drei Zeilen haben
+
+-mbl=3      # Maximale Anzahl an Leerzeilen am Stueck.
+-nolc       # lange kommentare nicht nach links schieben
+
+-fpsc=52    # Feste Position von seitlichen Kommentaren an Position 52
+
+
+-csc        # fuege Kommentare beim Ende eines Blocks ein, wenn der lang ist
+-csci=20    # ab 20 Zeilen
+
+-vt=0       # Umbrueche bei KLammern grosszuegug setzen
+
+-bbt=0      # Bloecke luftiger
+-sfs        # Semikolens bei for: mache Leerzeichen davor!
+
+
+# aus PBP
+
+-pt=1       # Mittlere Dichte bei runden Klammern
+-bt=1       # geschweifte
+-sbt=1      # eckige
+            # Umbruch vor allen Operatoren
+-wbb="% + - * / x != == >= <= =~ !~ < > | & = **= += *= &= <<= &&= -= /= |= >>= ||= //= .= %= ^= x="
+
+
+
+#
+#-l=78   # Max line width is 78 cols
+#-i=4    # Indent level is 4 cols
+#-ci=4   # Continuation indent is 4 cols
+#-st     # Output to STDOUT
+#-se     # Errors to STDERR
+#-vt=2   # Maximal vertical tightness
+#-cti=0  # No extra indentation for closing brackets
+#-pt=1   # Medium parenthesis tightness
+#-bt=1   # Medium brace tightness
+#-sbt=1  # Medium square bracket tightness
+#-bbt=1  # Medium block brace tightness
+#-nsfs   # No space before semicolons
+#-nolq   # Don't outdent long quoted strings
+#-wbb="% + - * / x != == >= <= =~ !~ < > | & >= < = **= += *= &= <<= && = -= /= |= >>= ||= .= %= ^= x="
+#        # Break before all operators

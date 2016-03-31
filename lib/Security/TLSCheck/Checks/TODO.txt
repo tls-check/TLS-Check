@@ -1,0 +1,13 @@
+
+More Checks:
+
+
+  * FREAK check
+  * Logjam Check
+  * Poodle 
+  	* Poodle on SSLv3
+  	* Poodle on TLS 
+  * more vulnerabilities ...
+  
+
+

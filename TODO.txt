@@ -1,0 +1,80 @@
+
+
+* merke vom Web-Check: mit oder ohne www vorne? => dann in CipherStrengts das nehmen
+
+
+
+
+
+* Neue Subtests:
+  * 
+  * Vulnerabilites:?!?
+  
+    * https://tools.ietf.org/html/rfc7457
+  
+  	* BEAST
+  	  * https://de.wikipedia.org/wiki/Transport_Layer_Security#BEAST
+  	  * http://www.hit.bme.hu/~buttyan/courses/EIT-SEC/abib/04-TLS/BEAST.pdf
+  	  * https://packetstormsecurity.com/files/105499/Browser-Exploit-Against-SSL-TLS.html
+  	* CRIME (und BREACH)
+  	  * https://en.wikipedia.org/wiki/CRIME
+  	  * https://en.wikipedia.org/wiki/BREACH_(security_exploit)
+  	* TIME
+  	  * https://media.blackhat.com/eu-13/briefings/Beery/bh-eu-13-a-perfect-crime-beery-wp.pdf
+  	* FREAK
+  	* Lucky 13
+	* Poodle TLS!
+	* RC4
+	* SLOTH
+
+* Score: OpenSource vs non OSS Webserver?
+
+* Server Name Mailserver???
+  * Mailserver OSS vs non OSS
+  * +Score
+
+
+=> % nur für flag, nicht für int type
+
+
+* ? Change all int types to num
+    Oder nicht? Oder 
+
+
+* Mach was mit den Branchen: wie das beachten? 
+  => Split Kategorie: A1, A2, A3; B1; B2; B3?
+  
+
+
+
+* test sha1? Signing alg cert?!?
+* Mailserver String & Version
+
+
+* MX: Debug hostname mismatch (...)
+* MX: neuer check, type group: starttls_error
+
+
+
+* !!!!!!!!!!!!!!
+  * checke domain name / certifikat-Validierung
+    => vgl. lists.odem.org
+
+
+* Schaue, was noch von O-Saft gut implementierbar ist! https://www.owasp.org/index.php/Testing_for_Weak_SSL/TLS_Ciphers,_Insufficient_Transport_Layer_Protection_(OTG-CRYPST-001)#Example_9._Testing_O-Saft_-_OWASP_SSL_advanced_forensic_tool
+  * => DAs beschränkt sich auf Regexp, das ist nicht immer ausreichend
+
+
+* Prüfe alle ERROR/WARN Logmeldungen
+
+
+ERROR: Perl warning: Use of uninitialized value $cert_len in concatenation (.) or string at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
+ERROR: Perl warning: Use of uninitialized value $cipher_spec_len in concatenation (.) or string at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
+ERROR: Perl warning: Use of uninitialized value $connection_id_len in concatenation (.) or string at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
+ERROR: Perl warning: Use of uninitialized value $rest in unpack at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
+
+
+
+
+
+
