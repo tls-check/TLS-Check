@@ -3,12 +3,14 @@ Revision history for TLS-Check
 0.20    2016-03-31
         First public release
 
-1.00    2016-04-01
+1.0.0   2016-04-01
         Version bump to 1.0
         fixed some tests
         fixed config file paths and config loading
         
-1.01    2016-04-01
+1.0.1   2016-04-01
         fixed bug, that config files could not be found
         fixed bug, that heartbleed executable was not correctly installed
 
+1.0.2   2016-04-01
+        again fixed missing config files
