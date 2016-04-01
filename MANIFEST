@@ -52,7 +52,6 @@ lib/Security/TLSCheck/Result.pm
 lib/Security/TLSCheck/Result/CSV.pm
 LICENSE
 MANIFEST			This list of files
-README
 README.md
 t/000-load.t
 t/110-ciphersuites.t

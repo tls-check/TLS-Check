@@ -10,12 +10,12 @@ Security::TLSCheck - Application for checking server's TLS capability
 
 =head1 VERSION
 
-Version 0.2.x, $Revision: 641 $
+Version 0.2.x, $Revision: 649 $
 
 =cut
 
 #<<<
-my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 641 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 649 $ =~ /(\d+)/xg );
 #>>>
 
 
@@ -65,13 +65,14 @@ use File::ShareDir;
 # Run this at begin, before logging gets initialized
 # TODO: maybe write a module for this, which may eliminate the BEGIN hazzle
 
-my $CONFIG_FILE;
+our $CONFIG_FILE;
 our $LOG_CONFIG_FILE;
-our $LOG_DIR;
+# our $LOG_DIR;
+my $should_die_later;
 
 BEGIN
 {
-   $LOG_DIR         = File::HomeDir->my_dist_data( 'TLS-Check', { create => 1 } );
+  #  $LOG_DIR         = File::HomeDir->my_dist_data( 'TLS-Check', { create => 1 } ) // "$Bin/../logs";
    $CONFIG_FILE     = _get_configfile("tls-check.conf");
    $LOG_CONFIG_FILE = $ENV{LOG_CONFIG} = _get_configfile("tls-check-logging.properties");
 
@@ -101,33 +102,19 @@ BEGIN
       $file = "$CONFDIR/$name";
       return $file if -f $file;
 
-      die "UUUPS, FATAL: configfile $name not found. Last try was <$file>.\n";
+      $should_die_later = "UUUPS, FATAL: configfile $name not found. Last try was <$file>.\n";
 
       } ## end sub _get_configfile
 
 } ## end BEGIN
 
+die $should_die_later if !$COMPILING and $should_die_later;
 
 
 
 use Log::Log4perl::EasyCatch;
 
 
-=begin temp
-
-was kann denn konfigurierbar sein?
-
-Logging-Config
-checks
-eingabe-file
-ausgabe-file
-flags
-
-
-
-=end temp
-
-=cut
 
 
 has app => (
@@ -221,13 +208,12 @@ Alvar C.H. Freude, C<< <"alvar at a-blast.org"> >>
 http://alvar.a-blast.org/
 
 
-
 =head1 ACKNOWLEDGEMENTS
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 Alvar C.H. Freude, http://alvar.a-blast.org/
+Copyright 2014–2016 Alvar C.H. Freude, http://alvar.a-blast.org/
 
 Development contracted by Chamber of Commerce and Industry of the 
 Stuttgart (Germany) Region and its committee of information technology, 

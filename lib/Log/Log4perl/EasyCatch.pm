@@ -21,7 +21,7 @@ use base qw(Exporter);
 Readonly our $LOG_TRESHOLD_VERBOSE => -3;
 Readonly our $LOG_TRESHOLD_SILENT  => 3;
 
-
+use 5.010;
 
 ## it's here OK to export them all.
 ## no critic (Modules::ProhibitAutomaticExportation)
@@ -38,7 +38,7 @@ our @EXPORT = qw(
 
 
 #<<<
-my $BASE_VERSION = "0.1"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 499 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.1"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 650 $ =~ /(\d+)/xg );
 #>>>
 
 =head1 VERSION
@@ -121,6 +121,19 @@ if ( not $initialised and not $COMPILING )
 
    } ## end if ( not $initialised ...)
 
+
+=head2 get_log_dir($application)
+
+Returns a log dir; can be called from logging-properties file!
+
+=cut
+
+sub get_log_dir
+   {
+   my $application = shift // "logs";
+   state $logdir = -d "$Bin/../logs" ? "$Bin/../logs" : File::HomeDir->my_dist_data( $application, { create => 1 } ) // "/tmp";
+   return $logdir;
+   }
 
 
 1;
