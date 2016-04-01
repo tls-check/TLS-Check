@@ -38,7 +38,7 @@ our @EXPORT = qw(
 
 
 #<<<
-my $BASE_VERSION = "0.1"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 650 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.1"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 652 $ =~ /(\d+)/xg );
 #>>>
 
 =head1 VERSION
@@ -65,7 +65,6 @@ Everything from Log::Log4perl in easy mode, plus: Logging of warnings and Except
 =head1 TODO:
 
 Automatic logging of data structures via Data::Dumper!
-
 Configure default log_dir via import.
 
 Include a default log config and optionally write it?
@@ -77,7 +76,10 @@ my $initialised;
 if ( not $initialised and not $COMPILING )
    {
 
-   Readonly our $DEFAULT_LOG_CONFIG => $ENV{LOG_CONFIG} || "$Bin/../conf/tls-check-logging.properties";
+   no warnings qw(once);
+   Readonly our $DEFAULT_LOG_CONFIG => $Security::TLSCheck::LOG_CONFIG_FILE // $ENV{LOG_CONFIG}
+      // "$Bin/../conf/tls-check-logging.properties";
+
 
    # log dir should be created by appender!
    # -d "$Bin/../logs" or mkdir "$Bin/../logs" or die "Kann fehlendes logs-Verzeichnis nicht anlegen: $OS_ERROR\n";

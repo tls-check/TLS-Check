@@ -8,3 +8,6 @@ Revision history for TLS-Check
         fixed some tests
         fixed config file paths and config loading
         
+1.01    2016-04-01
+        fixed bug, that config files could not be found
+        fixed bug, that heartbleed executable was not correctly installed

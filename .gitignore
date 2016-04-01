@@ -34,3 +34,4 @@ get-results.sh
 /.svn/
 /MANIFEST.SKIP.bak
 /t/logs/
+/svn-commit.tmp

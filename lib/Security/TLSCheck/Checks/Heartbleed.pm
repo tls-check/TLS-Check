@@ -26,7 +26,7 @@ Security::TLSCheck::Checks::Heartbleed - Heartbleed checks
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 640 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 657 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS
@@ -214,9 +214,13 @@ sub _check_heartbleed
 
    if   ($tls_type) { $cli_params = "--starttls $tls_type $host"; }
    else             { $cli_params = "$host:https"; }
+   
+   my $EXTBIN_DIR = eval { return File::ShareDir::module_dir("Security::TLSCheck") } // "$Bin/ext";
+   
+   die "check-ssl-heartbleed.pl not found" unless -x "$EXTBIN_DIR/check-ssl-heartbleed.pl";
 
    DEBUG "Run heartbleed-Check with '$cli_params'";
-   my @result = qx($Bin/ext/check-ssl-heartbleed.pl $cli_params 2>&1);    ## no critic (InputOutput::ProhibitBacktickOperators)
+   my @result = qx($EXTBIN_DIR/check-ssl-heartbleed.pl $cli_params 2>&1);    ## no critic (InputOutput::ProhibitBacktickOperators)
    my $rc     = $CHILD_ERROR;
    chomp @result;
    DEBUG "Heartbleed check finished";

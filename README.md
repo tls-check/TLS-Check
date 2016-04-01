@@ -35,20 +35,22 @@ For more Documentation see the doc in Security::TLSCheck::Checks::xxx
 * **Web** – Basic web tests: check if there is a website and if HTTPS is supported; redirect checks and some more.
 * **Mail** - Checks if the MX are reachable an support STARTTLS; DNS must run before, some results are used here.
 * **Dummy** – A small and simple example module; counts the top level domains.
-* **CipherStrength** – Checks for supported SSL/TLS versions and cipher suites of websites, checks if BSI and Bettercrypto recommendations are met and much more. Web must run first, it's output is used.
+* **CipherStrength** – Checks for supported SSL/TLS versions and cipher suites of websites, checks if BSI and Bettercrypto recommendations are met and much more. Web must run first, its output is used.
 * **MailCipherStrength** – the same, but for mailserver. Mail must run before.
-* **CipherStrengthOnlyValidCerts** – exactly the same as CipherStrength, but counts only web cipher strengths when the certificate is valid. CipherStrength must run first, it's result is used.
+* **CipherStrengthOnlyValidCerts** – exactly the same as CipherStrength, but counts only web cipher strengths when the certificate is valid. CipherStrength must run first, its result is used.
 * **AgeDE** – checks, if a server supports the german age declaration for youth protection and which default/minimum age are given. Web must run first.
 * **Heartbleed** – Heartbleed check, web and mail; Web and DNS must run before.
 * **FinalScore** – calculates a final score for websites (only websites). Web and CipherStrength must run before.
 
-Summary of the most important tests of a real life check, via TLS-Check summary script: 
+As example here a summary of the most important tests of a real life check, generated with TLS-Check and converted with the summary script: 
 * [TLS-Check summary IHK Region Stuttgart, Q1 2016](https://www.stuttgart.ihk24.de/blob/sihk24/Fuer-Unternehmen/innovation/downloads/3300084/5a1ce6ed286e7385afb6e878a95dcc65/TLS-Check---Zusammenfassung-data.pdf) (in german)
+
+Full output has much more details.
 
 
 ## Installation
 
-TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not tested on windows. TLS-Check is written in Perl with Moose and uses a lot of CPAN modules.
+TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not tested on Windows. TLS-Check is written in Perl with Moose and uses a lot of CPAN modules.
 
 ### Install as packages
 
@@ -72,7 +74,6 @@ It may complain about missing dependencies. Install them manually with your favo
 Then install it:
 
     ./Build install
-
 
 
 ## Example Usage
