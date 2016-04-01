@@ -8,7 +8,7 @@ Net::SSL::Handshake::Extensions - Base class for TLS handshake extensions
 
 =head1 VERSION
 
-Version 0.2.x, $Revision: 640 $
+Version 1.0.x, $Revision: 640 $
 
 
 =cut

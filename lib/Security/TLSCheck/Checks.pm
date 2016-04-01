@@ -22,7 +22,7 @@ Security::TLSCheck::Checks - Base class for all checks
 =cut
 
 #<<<
-my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 640 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "1.0"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 640 $ =~ /(\d+)/xg );
 #>>>
 
 
