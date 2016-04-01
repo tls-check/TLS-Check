@@ -42,6 +42,73 @@ Uups!
 
 use English qw( -no_match_vars );
 use FindBin qw($Bin);
+use File::HomeDir;
+use File::ShareDir;
+
+
+#
+# Configfile search:
+#   1. relative to bin: $Bin../conf (for development)
+#   2. /usr/local/etc (maybe /etc on linux?)
+#   3. ~/
+#
+
+
+#$DATADIR = eval { return File::ShareDir::module_dir(__PACKAGE__) };
+#$DATADIR = "$FindBin::Bin/../files/CipherSuites" if not defined $DATADIR;    # or not -d $DATADIR;
+
+
+
+# TODO: Configfile via File::ShareDir
+# Default: ~/.tls-check.conf; /usr/local/etc/tls-check.conf; /etc/tls-check.conf; File::ShareDir-Location
+
+# Run this at begin, before logging gets initialized
+# TODO: maybe write a module for this, which may eliminate the BEGIN hazzle
+
+my $CONFIG_FILE;
+our $LOG_CONFIG_FILE;
+our $LOG_DIR;
+
+BEGIN
+{
+   $LOG_DIR         = File::HomeDir->my_dist_data( 'TLS-Check', { create => 1 } );
+   $CONFIG_FILE     = _get_configfile("tls-check.conf");
+   $LOG_CONFIG_FILE = $ENV{LOG_CONFIG} = _get_configfile("tls-check-logging.properties");
+
+   sub _get_configfile
+      {
+      my $name = shift;
+
+      # 1. Look on development place
+      my $file = "$Bin/../conf/$name";
+      return $file if -f $file;
+
+      # 2. look in users home dir
+      $file = File::HomeDir->my_home() . "/.$name";
+      return $file if -f $file;
+
+      # 3. /usr/local/etc
+      $file = "/usr/local/etc/$name";
+      return $file if -f $file;
+
+      # 4. /etc
+      $file = "/etc/$name";
+      return $file if -f $file;
+
+      # and othervise look in applications share dir
+      my $CONFDIR = eval { return File::ShareDir::module_dir(__PACKAGE__) } // "conf";
+      # warn "Share-Dir-Eval-Error: $EVAL_ERROR" if $EVAL_ERROR;
+      $file = "$CONFDIR/$name";
+      return $file if -f $file;
+
+      die "UUUPS, FATAL: configfile $name not found. Last try was <$file>.\n";
+
+      } ## end sub _get_configfile
+
+} ## end BEGIN
+
+
+
 
 use Log::Log4perl::EasyCatch;
 

@@ -33,3 +33,4 @@ get-results.sh
 /more-testdomains/
 /.svn/
 /MANIFEST.SKIP.bak
+/t/logs/

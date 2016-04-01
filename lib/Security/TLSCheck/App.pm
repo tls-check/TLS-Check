@@ -99,7 +99,7 @@ BEGIN
 
       # and othervise look in applications share dir
       my $CONFDIR = eval { return File::ShareDir::module_dir(__PACKAGE__) } // "conf";
-      warn "Share-Dir-Eval-Error: $EVAL_ERROR" if $EVAL_ERROR;
+      # DEBUG "Share-Dir-Eval-Error: $EVAL_ERROR" if $EVAL_ERROR;
       $file = "$CONFDIR/$name";
       return $file if -f $file;
 

@@ -77,7 +77,7 @@ my $initialised;
 if ( not $initialised and not $COMPILING )
    {
 
-   Readonly our $DEFAULT_LOG_CONFIG => $ENV{LOG_CONFIG} || "$Bin/../conf/logging.properties";
+   Readonly our $DEFAULT_LOG_CONFIG => $ENV{LOG_CONFIG} || "$Bin/../conf/tls-check-logging.properties";
 
    # log dir should be created by appender!
    # -d "$Bin/../logs" or mkdir "$Bin/../logs" or die "Kann fehlendes logs-Verzeichnis nicht anlegen: $OS_ERROR\n";
