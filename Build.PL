@@ -24,8 +24,7 @@ my $builder = Module::Build->new(
       module => {
                   'Net::SSL::CipherSuites'                => [ 'files/CipherSuites', ],
                   'Security::TLSCheck::App::DomainFilter' => [ 'files/DomainFilter', ],
-                  'Security::TLSCheck'                    => [ 'conf', ],
-                  'Security::TLSCheck'                    => [ 'bin/ext', ]
+                  'Security::TLSCheck'                    => [ 'conf', 'bin/ext', ],
                 },
 
       #dist => [ 'conf', ],
