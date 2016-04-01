@@ -61,7 +61,7 @@ The most easy way to install TLS-Check is using FreeBSD and install it as port o
     # Or as package (the same TODO)
     pkg install security/tls-check
 
-### Manual installation on Linux/Unix…: 
+### Manual installation on Linux/Unix/…: 
 
 Download and unpack it. Run 
 
@@ -71,9 +71,13 @@ It may complain about missing dependencies. Install them manually with your favo
 
     ./Build installdeps
 
-Then install it:
+Because this runs a lot of tests, this takes a long time. If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before.
+
+Then you may install TLS-Check:
 
     ./Build install
+
+As alternative you can start everything without installing directly from `bin`, e.g. as `bin/tls-check-parallel.pl`.
 
 
 ## Example Usage
@@ -140,7 +144,10 @@ It's OK to have no category, so the file simply contains one domain per line.
 
 If you have enough memory it's OK to set --jobs to a high value. But at the moment the parallel mode is not optimal.
 
-You find log files (trace, info and error) usually in ~/.perl/dist/TLS-Check by default, or in your data-directory if your OS supports this.
+
+### Logfiles
+
+You find log files (trace, info and error) usually in ~/.perl/dist/TLS-Check by default, or in your data-directory if your OS supports this. When running without installation, the logfiles will stored in the logs folder in die main diretory.
 
 
 ## Bugs
@@ -149,7 +156,7 @@ It's sure, that there are bugs. Please report them, patches and fixes are welcom
 
 ### Known other issues
 
-* Some documentation (POD) for code and internal API should be (re)written.
+* Some documentation (POD) for code and internal API should be (re)written
 * Parallel fork mode does not scale well, should be rewritten with a fork pool and queue handling
 * Some tests are written for execution in my local development environment, should be rewritten
 * write more and better tests, e.g. with different SSL implementations
