@@ -50,7 +50,7 @@ TODO:
    {
    local $TODO = "Need to replace the boilerplate text";
 
-   not_in_file_ok( README                       => "The README is used..." => qr/The README is used/,
+   not_in_file_ok( "README.md"                  => "The README is used..." => qr/The README is used/,
                    "'version information here'" => qr/to provide version information/, );
 
    not_in_file_ok( Changes => "placeholder date/time" => qr(Date/time) );
