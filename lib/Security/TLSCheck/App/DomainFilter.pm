@@ -20,7 +20,7 @@ Version 0.2.x
 =cut
 
 #<<<
-my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 540 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 645 $ =~ /(\d+)/xg );
 #>>>
 
 
@@ -57,8 +57,11 @@ my %map = (
 
           );
 
+my $DATADIR = eval { return File::ShareDir::module_dir(__PACKAGE__); } or warn "Share-Dir-Eval-Error: $EVAL_ERROR";
+$DATADIR = "$FindBin::Bin/../files/DomainFilter" if not defined $DATADIR;    # or not -d $DATADIR;
+
 # Source: https://data.iana.org/TLD/tlds-alpha-by-domain.txt
-my %valid_tlds = map { lc($ARG) => 1 } grep { not m{ ^ \s* [#] }x } io("$Bin/../conf/tlds-alpha-by-domain.txt")->chomp->slurp;
+my %valid_tlds = map { lc($ARG) => 1 } grep { not m{ ^ \s* [#] }x } io("$DATADIR/tlds-alpha-by-domain.txt")->chomp->slurp;
 my $tlds_regex_or = join( q(|), keys %valid_tlds );
 my $FORBIDDEN_DOMAINS = qr{ (t[-\s]?online|arcor|web|gmx|hotmail|yahoo) }x;
 

@@ -31,3 +31,5 @@ run-localdummy.sh
 testresult.csv
 get-results.sh
 /more-testdomains/
+/.svn/
+/MANIFEST.SKIP.bak

@@ -33,7 +33,7 @@ Readonly our $TLSv1  => 0x0301;
 Readonly our $TLSv11 => 0x0302;
 Readonly our $TLSv12 => 0x0303;
 
-Readonly our %CONTENT_TYPE = (
+Readonly our %CONTENT_TYPE => (
                                change_cipher_spec => 20,
                                alert              => 21,
                                handshake          => 22,
@@ -42,7 +42,7 @@ Readonly our %CONTENT_TYPE = (
                              );
 
 
-Readonly our %HANDSHAKE_TYPE = (
+Readonly our %HANDSHAKE_TYPE => (
                                  client_hello         => 1,
                                  server_hello         => 2,
                                  session_ticket       => 4,
@@ -64,11 +64,11 @@ Net::SSL::Handshake - SSL Handshake on an existing connection or open a new one
 
 =head1 VERSION
 
-Version 0.1.x, $Revision: 640 $
+Version 0.1.x, $Revision: 646 $
 
 =cut
 
-use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 640 $ =~ /(\d+)/xg ) );
+use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 646 $ =~ /(\d+)/xg ) );
 
 
 

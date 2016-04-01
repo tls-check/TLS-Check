@@ -32,7 +32,7 @@ Readonly my $COL_RESULT_MEDIAN     => 12;
 Readonly my $COL_RESULT_GROUP      => 13;
 
 
-Readonly my $HACKY_CONF__NO_CATEGORIES => 1;
+Readonly my $HACKY_CONF__NO_CATEGORIES => 0;       # 1;
 
 
 

@@ -1,3 +1,4 @@
+.includepath
 .project
 bin/check_ciphers_single_domains.pl
 bin/csv-result-to-summary.pl
@@ -14,10 +15,10 @@ bin/tls-check-parallel.pl
 bin/tls-check.pl
 Build.PL
 Changes
-conf/logging.properties
-conf/tlds-alpha-by-domain.txt
-conf/tlscheck.conf
+conf/tls-check-logging.properties
+conf/tls-check.conf
 files/CipherSuites/tls-parameters-4.csv
+files/DomainFilter/tlds-alpha-by-domain.txt
 ignore.txt
 lib/Log/Log4perl/EasyCatch.pm
 lib/MooseX/ListAttributes.pm
@@ -49,8 +50,10 @@ lib/Security/TLSCheck/Checks/TODO.txt
 lib/Security/TLSCheck/Checks/Web.pm
 lib/Security/TLSCheck/Result.pm
 lib/Security/TLSCheck/Result/CSV.pm
+LICENSE
 MANIFEST			This list of files
 README
+README.md
 t/000-load.t
 t/110-ciphersuites.t
 t/120-ssl-handshake.t
@@ -67,23 +70,6 @@ t/930-pod-coverage.t
 t/931-pod.t
 t/log-test.properties
 t/manual/check_lwp_preload.pl
-t/more-testdomains/11284323.pdf
-t/more-testdomains/dummy-cn-domains-1000-a.csv
-t/more-testdomains/dummy-de-domains-1000-a.csv
-t/more-testdomains/dummy-de-domains-1000-b.csv
-t/more-testdomains/dummy-de-domains-1000-c.csv
-t/more-testdomains/dummy-domains-100-a.csv
-t/more-testdomains/dummy-domains-100-b.csv
-t/more-testdomains/dummy-domains-100-c.csv
-t/more-testdomains/dummy-domains-1000-a.csv
-t/more-testdomains/dummy-domains-1000-b.csv
-t/more-testdomains/dummy-domains-1000-c.csv
-t/more-testdomains/dummy-domains-10000-a.csv
-t/more-testdomains/dummy-domains-10000-b.csv
-t/more-testdomains/dummy-domains-10000-c.csv
-t/more-testdomains/dummy-fr-domains-1000-a.csv
-t/more-testdomains/dummy-jp-domains-1000-a.csv
-t/more-testdomains/testdomains-foreign-weak.txt
 t/one-testdomain.txt
 t/perlcriticrc
 t/perltidyrc
@@ -92,6 +78,3 @@ t/ssl/test.html
 t/testdomains.txt
 t/umlautdomain.txt
 TODO.txt
-Makefile.PL
-META.yml
-META.json

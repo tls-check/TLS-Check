@@ -14,7 +14,7 @@ Version 0.2.x
 =cut
 
 #<<<
-my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 630 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 641 $ =~ /(\d+)/xg );
 #>>>
 
 
@@ -34,6 +34,8 @@ my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION
 
 =cut
 
+BEGIN { extends "Security::TLSCheck::App"; }
+
 use English qw( -no_match_vars );
 use FindBin qw($Bin);
 
@@ -45,7 +47,6 @@ use Storable;                                      # => used internally by PFM; 
 
 use Time::HiRes qw(time);
 
-extends "Security::TLSCheck::App";
 
 
 # Attributes and default values.

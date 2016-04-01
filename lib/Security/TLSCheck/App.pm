@@ -15,7 +15,7 @@ Version 0.2.x
 =cut
 
 #<<<
-my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 640 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 648 $ =~ /(\d+)/xg );
 #>>>
 
 
@@ -39,14 +39,79 @@ use English qw( -no_match_vars );
 use FindBin qw($Bin);
 use Data::Dumper;
 use Module::Loaded;
-
-use Log::Log4perl::EasyCatch;
-use Security::TLSCheck;
-
+use File::HomeDir;
 use Text::CSV_XS;
+use File::ShareDir;
 
 # use IO::All -utf8;
 use IO::All;                                       # -utf8;
+
+
+
+#
+# Configfile search:
+#   1. relative to bin: $Bin../conf (for development)
+#   2. /usr/local/etc (maybe /etc on linux?)
+#   3. ~/
+#
+
+
+#$DATADIR = eval { return File::ShareDir::module_dir(__PACKAGE__) };
+#$DATADIR = "$FindBin::Bin/../files/CipherSuites" if not defined $DATADIR;    # or not -d $DATADIR;
+
+
+
+# TODO: Configfile via File::ShareDir
+# Default: ~/.tls-check.conf; /usr/local/etc/tls-check.conf; /etc/tls-check.conf; File::ShareDir-Location
+
+# Run this at begin, before logging gets initialized
+# TODO: maybe write a module for this, which may eliminate the BEGIN hazzle
+
+my $CONFIG_FILE;
+our $LOG_CONFIG_FILE;
+our $LOG_DIR;
+
+BEGIN
+{
+   $LOG_DIR         = File::HomeDir->my_dist_data( 'TLS-Check', { create => 1 } );
+   $CONFIG_FILE     = _get_configfile("tls-check.conf");
+   $LOG_CONFIG_FILE = $ENV{LOG_CONFIG} = _get_configfile("tls-check-logging.properties");
+
+   sub _get_configfile
+      {
+      my $name = shift;
+
+      # 1. Look on development place
+      my $file = "$Bin/../conf/$name";
+      return $file if -f $file;
+
+      # 2. look in users home dir
+      $file = File::HomeDir->my_home() . "/.$name";
+      return $file if -f $file;
+
+      # 3. /usr/local/etc
+      $file = "/usr/local/etc/$name";
+      return $file if -f $file;
+
+      # 4. /etc
+      $file = "/etc/$name";
+      return $file if -f $file;
+
+      # and othervise look in applications share dir
+      my $CONFDIR = eval { return File::ShareDir::module_dir(__PACKAGE__) } // "conf";
+      warn "Share-Dir-Eval-Error: $EVAL_ERROR" if $EVAL_ERROR;
+      $file = "$CONFDIR/$name";
+      return $file if -f $file;
+
+      die "UUUPS, FATAL: configfile $name not found. Last try was <$file>.\n";
+
+      } ## end sub _get_configfile
+
+} ## end BEGIN
+
+
+use Log::Log4perl::EasyCatch;
+use Security::TLSCheck;
 
 
 
@@ -86,14 +151,14 @@ flags
 
 =cut
 
-my @default_checks = qw(DNS Web Mail Dummy CipherStrength MailCipherStrength AgeDE Heartbleed CipherStrengthOnlyValidCerts FinalScore);
+my @default_checks
+   = qw(DNS Web Mail Dummy CipherStrength MailCipherStrength AgeDE Heartbleed CipherStrengthOnlyValidCerts FinalScore);
 
-# TODO: Configfile via File::ShareDir
-# Default: ~/.tls-check.conf; /usr/local/etc/tls-check.conf; /etc/tls-check.conf; File::ShareDir-Location
+
 
 # Attributes and default values.
 #<<< 
-has configfile        => (is => "ro", isa => "Str",           default => "$Bin/../conf/tlscheck.conf",                 documentation => "Configuration file");
+has configfile        => (is => "ro", isa => "Str",           default => $CONFIG_FILE,                                 documentation => "Configuration file");
 has log_config        => (is => "ro", isa => "Str",           default => $DEFAULT_LOG_CONFIG,                          documentation => "Alternative logging config" );
 has checks            => (is => "rw", isa => "ArrayRef[Str]", default => sub { \@default_checks },    auto_deref => 1, documentation => "List of checks to run" );
 has user_agent_name   => (is => "ro", isa => "Str",           default => "TLS-Check/$VERSION",                         documentation => "UserAgent string for web checks" ) ;
@@ -102,7 +167,7 @@ has timeout           => (is => "ro", isa => "Int",           default => 60,    
 has separator         => (is => "ro", isa => "Str",           default => q{;},                                         documentation => "CSV Separator char(s)" );
 has files             => (is => "ro", isa => "ArrayRef[Str]", lazy_build => 1,                        auto_deref => 1, documentation => "List of files with domain names to check" );
 has verbose           => (is => "ro", isa => "Bool",          default => 0,                                            documentation => "Verbose Output/Logging" );
-has temp_out_interval => (is => "ro", isa => "Int",           default => 0,                                            documentation => "Produce temporary output every # Domains");
+has temp_out_interval => (is => "ro", isa => "Int",           default => 250,                                          documentation => "Produce temporary output every # Domains");
 
 #>>>
 
@@ -154,9 +219,9 @@ sub BUILD
       DEBUG "Logging initialised with default config: $DEFAULT_LOG_CONFIG.";
       }
 
-   # split check names 
-   my @checks = map { split( m{ [:\s] }x, $ARG); } $self->checks;
-   $self->checks(\@checks);
+   # split check names
+   my @checks = map { split( m{ [:\s] }x, $ARG ); } $self->checks;
+   $self->checks( \@checks );
 
    #
    # Pre-Load all Check Modules
@@ -184,7 +249,7 @@ my %domains_analysed;
 sub run
    {
    my $self = shift;
-   
+
    my $starttime = time;
 
    return $self->list_attributes if $self->show_options;
@@ -207,6 +272,8 @@ sub run
          next unless $read_domain;
          next if $read_domain =~ m{^[#]}x;
          next if $read_domain eq "INTERNET_NR";    # skip header line
+         
+         $category //= "<no category>";
 
          DEBUG "Next Domain: $read_domain in category $category";
 
@@ -226,7 +293,7 @@ sub run
 
          $domains_analysed{$domain} = 1;
          $counter++;
-         
+
          eval {
             $self->analyse( $domain, $category, $read_domain, $counter );
             return 1;
@@ -248,19 +315,19 @@ sub run
    $self->output;
 
    INFO "Final message: Everything finished. THE END.";
-   
-   my $endtime = time;
+
+   my $endtime  = time;
    my $duration = $endtime - $starttime;
-   my $minutes = int($duration/60);
+   my $minutes  = int( $duration / 60 );
    my $rest_sec = $duration % 60;
-   my $hours = int($minutes/60);
+   my $hours    = int( $minutes / 60 );
    my $rest_min = $minutes % 60;
-   
+
    $rest_sec = "0$rest_sec" if $rest_sec < 10;
    $rest_min = "0$rest_min" if $rest_min < 10;
-   
+
    INFO localtime . " Total Runtime: $duration seconds -- $hours::$rest_min::$rest_sec";
-   
+
 
    return;
    } ## end sub run

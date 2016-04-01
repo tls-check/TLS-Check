@@ -18,7 +18,7 @@ Security::TLSCheck::Checks::CipherStrength - Check Strength of CipherSuites and 
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 640 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 647 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS
@@ -200,7 +200,7 @@ sub join_cipher_names
    my $self = shift;
 
    my $ciphers = join( ":", $self->properties->supported_cipher_names );
-   TRACE "Score ${ \$self->score }, Supported Ciphers for ${ \$self->www }: $ciphers";
+   TRACE "Score ${ \$self->score }, Supported Ciphers for ${ \$self->domain }: $ciphers";
    return $ciphers;
    }
 

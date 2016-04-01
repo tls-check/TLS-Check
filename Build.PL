@@ -21,10 +21,17 @@ my $builder = Module::Build->new(
                      },
 
    share_dir => {
-                  module => {
-                              'Net::SSL::CipherSuites' => ['files/CipherSuites'],
-                            }
-                },
+      module => {
+                  'Net::SSL::CipherSuites'                => [ 'files/CipherSuites', ],
+                  'Security::TLSCheck::App::DomainFilter' => [ 'files/DomainFilter', ],
+                  'Security::TLSCheck::App'               => [ 'conf', ]
+                }
+   },
+
+   #   config_files => {
+   #      '' => '',
+   #   },
+
 
    # TODO:
    # Check minimal required versions!
@@ -52,6 +59,7 @@ my $builder = Module::Build->new(
                  'LWP::UserAgent'        => 6.06,
                  'PerlIO::via::Timeout'  => 0.32,
                  'Parallel::ForkManager' => 1.17,             # make this OPTIONAL!
+                 'File::HomeDir'         => 1.0,
                },
    add_to_cleanup     => ['Security-TLSCheck-*'],
    create_makefile_pl => 'traditional',

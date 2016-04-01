@@ -20,7 +20,7 @@ Security::TLSCheck::Checks::Helper::MX - Get all MX, cache if already checked, .
 
 =cut
 
-use version; our $VERSION = qv( "v0.2." . ( sprintf "%d", q$Revision: 527 $ =~ /(\d+)/xg ) );
+use version; our $VERSION = qv( "v0.2." . ( sprintf "%d", q$Revision: 641 $ =~ /(\d+)/xg ) );
 
 
 =head1 SYNOPSIS
@@ -117,7 +117,7 @@ sub mx_is_checked
    my $lock = io("$TEMPDIR/$mx.lock")->lock;
    $lock->println( "locked " . localtime() );
 
-   my $is_checked = eval { my $content < io("$TEMPDIR/$mx"); return $content; };
+   my $is_checked = eval { my $content = io("$TEMPDIR/$mx")->all; return $content; };
 
    if ($is_checked)
       {
@@ -127,7 +127,7 @@ sub mx_is_checked
       }
 
    DEBUG "MX $mx is not yet checked.";
-   "Checked $mx at " . localtime() > io("$TEMPDIR/$mx");
+   io("$TEMPDIR/$mx")->print("Checked $mx at " . localtime);
 
    return 0;
    } ## end sub mx_is_checked

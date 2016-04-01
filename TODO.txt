@@ -1,14 +1,11 @@
 
 
-* merke vom Web-Check: mit oder ohne www vorne? => dann in CipherStrengts das nehmen
+* store if web check was successful with www. or without; => use this in CipherStrengts 
 
 
-
-
-
-* Neue Subtests:
+* New Subtests:
   * 
-  * Vulnerabilites:?!?
+  * Vulnerabilites:
   
     * https://tools.ietf.org/html/rfc7457
   
@@ -23,55 +20,31 @@
   	  * https://media.blackhat.com/eu-13/briefings/Beery/bh-eu-13-a-perfect-crime-beery-wp.pdf
   	* FREAK
   	* Lucky 13
+  	* Poodle on SSLv3 (simple: if SSLv3, then poodle ;) )
 	* Poodle TLS!
 	* RC4
 	* SLOTH
 
 * Score: OpenSource vs non OSS Webserver?
 
-* Server Name Mailserver???
-  * Mailserver OSS vs non OSS
-  * +Score
 
+* ? Change int types to num?
 
-=> % nur für flag, nicht für int type
-
-
-* ? Change all int types to num
-    Oder nicht? Oder 
-
-
-* Mach was mit den Branchen: wie das beachten? 
-  => Split Kategorie: A1, A2, A3; B1; B2; B3?
+* support multiple categories per domain 
+  => Split category: A1, A2, A3; B1; B2; B3?
   
 
-
-
 * test sha1? Signing alg cert?!?
-* Mailserver String & Version
-
+* Mailserver String & Version?
 
 * MX: Debug hostname mismatch (...)
-* MX: neuer check, type group: starttls_error
+* MX: new check, type group: starttls_error
 
+* Maybe implement somoe other simple tests from o-saft! https://www.owasp.org/index.php/Testing_for_Weak_SSL/TLS_Ciphers,_Insufficient_Transport_Layer_Protection_(OTG-CRYPST-001)#Example_9._Testing_O-Saft_-_OWASP_SSL_advanced_forensic_tool
+  * => usually the check only cipher suites via Regexp; not always sufficient
 
+* Check remaining ERROR/WARN log messages
 
-* !!!!!!!!!!!!!!
-  * checke domain name / certifikat-Validierung
-    => vgl. lists.odem.org
-
-
-* Schaue, was noch von O-Saft gut implementierbar ist! https://www.owasp.org/index.php/Testing_for_Weak_SSL/TLS_Ciphers,_Insufficient_Transport_Layer_Protection_(OTG-CRYPST-001)#Example_9._Testing_O-Saft_-_OWASP_SSL_advanced_forensic_tool
-  * => DAs beschränkt sich auf Regexp, das ist nicht immer ausreichend
-
-
-* Prüfe alle ERROR/WARN Logmeldungen
-
-
-ERROR: Perl warning: Use of uninitialized value $cert_len in concatenation (.) or string at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
-ERROR: Perl warning: Use of uninitialized value $cipher_spec_len in concatenation (.) or string at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
-ERROR: Perl warning: Use of uninitialized value $connection_id_len in concatenation (.) or string at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
-ERROR: Perl warning: Use of uninitialized value $rest in unpack at /usr/home/alvar/tls-check/bin/../lib/Net/SSL/Handshake.pm line 811, <GEN5> line 917. 
 
 
 
