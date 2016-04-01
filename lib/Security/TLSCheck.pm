@@ -37,6 +37,8 @@ TODO: Write Description!
 
 For a project overview, see the README.md of the Distribution.
 
+If you want to write you own checks, look at the checks in C<Security::TLSCheck::Checks>, 
+e.g. Dummy for a simple intro.
 
 =cut
 

@@ -66,6 +66,14 @@ has '+description' => ( default => "Dummy Checks" );
 
 #>>>
 
+# 
+# This example check has NO C<run_check> method, it uses this from the 
+# base class C<Security::TLSCheck::Checks>. This only calls the result 
+# method, and this collects everything from the methods given in the 
+# above defined key figures.
+# THe C<run_check> method can be used to initiate some states or whatever, 
+# but in this example this is not necessary.
+# 
 
 =head1 METHODS
 

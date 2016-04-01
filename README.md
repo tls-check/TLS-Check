@@ -14,7 +14,7 @@ Development contracted by Chamber of Commerce and Industry of the Stuttgart (Ger
 
 ## Why writing another SSL/TLS testing tool? What are the primary goals?
 
-There are a lot of tools, which check servers for their SSL/TLS capabilities (e.g. SSLyze, O-Saft and much more). But none meets all our requirements at starting with TLS-Check in 2014:
+There are a lot of tools, which check servers for their SSL/TLS capabilities (e.g. SSLyze, OWASP O-Saft, ssl-cipher-suite-enum, testssl.sh and much more). But none meets all our requirements at starting with TLS-Check in 2014:
 
 * We need a flexible and extensible tool to check every possible key figure for a given domain – e.g. from counting how many servers support IPv6 or the different top level domains to counting how many supports the really old SSLv2 protocol.
 * The most important subtests in TLS-Check are SSL/TLS checks. TLS-Check uses it's own SSL/TLS handshake implementation, because we found no acceptable other solution. Some of the tools for checking SSL/TLS cipher suites are really ugly hacks, violating all best practice rules, have no or very few automated tests, have ugly spaghetti code, are unmaintainable or buggy. TLS-Check is not free of errors, but tries to have testable, extendable, maintainable code.
@@ -126,6 +126,10 @@ Each config parameter can be set in the configuration file. This is searched in 
     /etc/tls-check.conf
     <perl installation dir>/tls-check.conf
 
+You can view the default and used values by adding `--show_options`:
+
+    tls-check-parallel.pl --show_options
+    tls-check-parallel.pl --configfile=~/my-config.conf --show_options
 
 The domain file is a CSV and has one or more colums: first column is a domain name, the second a category; so it looks usually like:
 

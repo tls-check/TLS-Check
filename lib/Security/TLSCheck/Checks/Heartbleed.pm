@@ -37,10 +37,11 @@ use version; our $VERSION = sprintf "%d", q$Revision: 657 $ =~ /(\d+)/xg;
 =head1 DESCRIPTION
 
 
-At the moment this calls Steffen Ullrichs check-ssl-heartbleed.pl
+At the moment this calls Steffen Ullrichs check-ssl-heartbleed.pl, 
+which can be found here: https://github.com/noxxi/p5-ssl-tools
 
-Later some parts of this should be integratet into this module
-
+Later some parts of this should be integrated into this module, 
+because running external executables is expensive.
 
 =cut
 
