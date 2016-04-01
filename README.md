@@ -50,24 +50,24 @@ TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not
 
 The most easy way to install TLS-Check is using FreeBSD and install it as port or package.
 
-  # TODO: port coming soon!
-  cd /usr/ports/security/tls-check && make install clean
-  # Or as package (the same TODO)
-  pkg install security/tls-check
+    # TODO: port coming soon!
+    cd /usr/ports/security/tls-check && make install clean
+    # Or as package (the same TODO)
+    pkg install security/tls-check
 
 ### Manual installation on Linux/Unix…: 
 
 Download and unpack it. Run 
 
-  perl Build.PL
+    perl Build.PL
 
 It may complain about missing dependencies. Install them manually with your favorite package manager or use the buildin CPAN installer:
 
-  ./Build installdeps
+    ./Build installdeps
 
 Then install it:
 
-  ./Build install
+    ./Build install
 
 
 
@@ -75,8 +75,8 @@ Then install it:
 
 ### Short summary
 
-  tls-check-parallel.pl --files=path/to/domain-file.txt --outfile=result/my-result.csv
-  csv-result-to-summary.pl result/my-result.csv > result/summary.csv
+    tls-check-parallel.pl --files=path/to/domain-file.txt --outfile=result/my-result.csv
+    csv-result-to-summary.pl result/my-result.csv > result/summary.csv
 
 You may also run it without parameter, then it gets input from STDIN and writes the result to STDOUT.
 
@@ -88,44 +88,44 @@ You can also use the full result, but it's hard to read.
 
 After installation there are some new executables:
 
-  tls-check.pl
-  tls-check-parallel.pl
+    tls-check.pl
+    tls-check-parallel.pl
   
 They are the same, but, ths-check-parallel can query domains in parallel.
 
 Usage:
 
- > tls-check-parallel.pl --help
- usage: tls-check-parallel.pl [-?h] [long options...]
-	--configfile STR          Configuration file
-	--jobs INT                Number of max. parallel worker jobs
-	--log_config STR          Alternative logging config
-	--checks STR...           List of checks to run
-	--user_agent_name STR     UserAgent string for web checks
-	--my_hostname STR         Hostname for SMTP EHLO etc.
-	--timeout INT             Timeout for networking
-	--separator STR           CSV Separator char(s)
-	--files STR...            List of files with domain names to check
-	--verbose                 Verbose Output/Logging
-	--temp_out_interval INT   Produce temporary output every # Domains
-	-h -? --usage --help      Prints this usage information.
-	--undef_string STR        String for undef with show_options
-	--show_options            List all Options
-	--results KEY=STR...       
-	--outfile STR             Output file name; - for STDOUT (default)
+    > tls-check-parallel.pl --help
+    usage: tls-check-parallel.pl [-?h] [long options...]
+      --configfile STR          Configuration file
+      --jobs INT                Number of max. parallel worker jobs
+      --log_config STR          Alternative logging config
+      --checks STR...           List of checks to run
+      --user_agent_name STR     UserAgent string for web checks
+      --my_hostname STR         Hostname for SMTP EHLO etc.
+      --timeout INT             Timeout for networking
+      --separator STR           CSV Separator char(s)
+      --files STR...            List of files with domain names to check
+      --verbose                 Verbose Output/Logging
+      --temp_out_interval INT   Produce temporary output every # Domains
+      -h -? --usage --help      Prints this usage information.
+      --undef_string STR        String for undef with show_options
+      --show_options            List all Options
+      --results KEY=STR...       
+      --outfile STR             Output file name; - for STDOUT (default)
 
 Each config parameter can be set in the configuration file. This is searched in the following places:
 
-  ~/.tls-check.conf
-  /usr/local/etc/tls-check.conf
-  /etc/tls-check.conf
-  <perl installation dir>/tls-check.conf
+    ~/.tls-check.conf
+    /usr/local/etc/tls-check.conf
+    /etc/tls-check.conf
+    <perl installation dir>/tls-check.conf
 
 
 The domain file is a CSV and has one or more colums: first column is a domain name, the second a category; so it looks usually like:
 
-  domain.tld;Category
-  other-domain.tld;Other Category
+    domain.tld;Category
+    other-domain.tld;Other Category
 
 It's OK to have no category, so the file simply contains one domain per line.
 
