@@ -10,6 +10,14 @@ use Net::SSL::GetServerProperties;
 
 use 5.010;
 
+say "--";
+say "-- TLS-Check / Net::SSL::GetServerProperties -- Version $Net::SSL::GetServerProperties::VERSION";
+say "-- Small helper for getting a quick (and incomplete) overview of one or more hosts";
+say "--";
+say "-- usage: $0 <hostname> [ <more mosts> ... ]";
+say "--";
+say "";
+
 foreach my $host (@ARGV)
    {
 

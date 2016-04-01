@@ -32,6 +32,8 @@ my $BASE_VERSION = "1.0"; use version; our $VERSION = qv( sprintf "$BASE_VERSION
 
 =head1 DESCRIPTION
 
+For a project overview, see the README.md of the Distribution.
+
 
 =cut
 

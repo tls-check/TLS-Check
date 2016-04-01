@@ -35,7 +35,7 @@ TODO!
 
 TODO: Write Description!
 
-Uups!
+For a project overview, see the README.md of the Distribution.
 
 
 =cut

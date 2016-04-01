@@ -55,6 +55,10 @@ As caller:
 
 Base class for all checks. Defines all common attributes, and helper methods.
 
+For a project overview, see the README.md of the Distribution.
+
+
+
 =cut
 
 
