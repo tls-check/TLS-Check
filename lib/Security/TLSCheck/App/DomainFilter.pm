@@ -57,7 +57,7 @@ my %map = (
 
           );
 
-my $DATADIR = eval { return File::ShareDir::module_dir(__PACKAGE__); } or warn "Share-Dir-Eval-Error: $EVAL_ERROR";
+my $DATADIR = eval { return File::ShareDir::module_dir(__PACKAGE__); } or DEBUG "Share-Dir-Eval-Error: $EVAL_ERROR";
 $DATADIR = "$FindBin::Bin/../files/DomainFilter" if not defined $DATADIR;    # or not -d $DATADIR;
 
 # Source: https://data.iana.org/TLD/tlds-alpha-by-domain.txt
