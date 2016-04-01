@@ -42,6 +42,10 @@ For more Documentation see the doc in Security::TLSCheck::Checks::xxx
 * **Heartbleed** – Heartbleed check, web and mail; Web and DNS must run before.
 * **FinalScore** – calculates a final score for websites (only websites). Web and CipherStrength must run before.
 
+Summary of the most important tests of a real life check, via TLS-Check summary script: 
+* [TLS-Check summary IHK Region Stuttgart, Q1 2016](https://www.stuttgart.ihk24.de/blob/sihk24/Fuer-Unternehmen/innovation/downloads/3300084/5a1ce6ed286e7385afb6e878a95dcc65/TLS-Check---Zusammenfassung-data.pdf) (in german)
+
+
 ## Installation
 
 TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not tested on windows. TLS-Check is written in Perl with Moose and uses a lot of CPAN modules.
@@ -159,8 +163,17 @@ Development contracted by Chamber of Commerce and Industry of the Stuttgart (Ger
 
 https://www.stuttgart.ihk24.de
 
+## Links
+
+* [TLS-Check page, IHK Region Stuttgart](https://www.stuttgart.ihk24.de/Fuer-Unternehmen/innovation/E-Businessberatung/IT-Sicherheits-Check/664320)  (in german)
+* [TLS-Check summary IHK Region Stuttgart, Q1 2016](https://www.stuttgart.ihk24.de/blob/sihk24/Fuer-Unternehmen/innovation/downloads/3300084/5a1ce6ed286e7385afb6e878a95dcc65/TLS-Check---Zusammenfassung-data.pdf); output from the TLS-Check summary script (in german)
+* [Description TLS Check and results](https://www.stuttgart.ihk24.de/blob/sihk24/Fuer-Unternehmen/innovation/downloads/3300070/801b0ef29405c1710223f9a76bc24c06/TLS-Check-Ergebnisse-data.pdf) (in german)
+* [Bettercrypto project](https://bettercrypto.org), [Bettercrypto guide](https://bettercrypto.org/static/applied-crypto-hardening.pdf) with copy&paste configuration examples for hardening your servers (in english)
+* [BSI Guideline TR-01102-2](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Publikationen/TechnischeRichtlinien/TR02102/BSI-TR-02102-2.html) (in german)
+* [Press Release IHK Region Stuttgart](https://www.stuttgart.ihk24.de/presse/Pressemitteilungen/IHK-Pressemitteilungen_2016/Januar-bis-Maerz_2016/PM-Nr--17-Sicherheitscheck/3302518) to the first public launch (in german)
 
 ## License 
 
 TLS-Check is licensed under the [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0) or the [European Public Licence 1.1 (EUPL)](https://joinup.ec.europa.eu/community/eupl/og_page/european-union-public-licence-eupl-v11).
+
 
