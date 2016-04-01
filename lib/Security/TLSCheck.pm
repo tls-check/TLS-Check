@@ -105,7 +105,8 @@ BEGIN
       return $file if -f $file;
 
       $should_die_later = "UUUPS, FATAL: configfile $name not found. Last try was <$file>.\n";
-
+      return;
+      
       } ## end sub _get_configfile
 
 } ## end BEGIN
