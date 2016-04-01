@@ -91,7 +91,7 @@ After installation there are some new executables:
     tls-check.pl
     tls-check-parallel.pl
   
-They are the same, but, ths-check-parallel can query domains in parallel.
+They are the same, but, tls-check-parallel can query domains in parallel.
 
 Usage:
 
@@ -153,13 +153,14 @@ It's sure, that there are bugs. Please report them, patches and fixes are welcom
 
 ## Author
 
-TLS-Check is written by [Alvar C.H. Freude](http://alvar.a-blast.org/).
+TLS-Check is written by [Alvar C.H. Freude](http://alvar.a-blast.org/), 2014–2016.
 
 Development contracted by Chamber of Commerce and Industry of the Stuttgart (Germany) Region and its committee of information technology, information services and telecommunication.
 
 https://www.stuttgart.ihk24.de
 
+
 ## License 
 
-TLS-Check is licensed under the Artistic License 2.0 or the European Public Licence 1.1 (EUPL).
+TLS-Check is licensed under the [Artistic License 2.0](https://opensource.org/licenses/Artistic-2.0) or the [European Public Licence 1.1 (EUPL)](https://joinup.ec.europa.eu/community/eupl/og_page/european-union-public-licence-eupl-v11).
 
