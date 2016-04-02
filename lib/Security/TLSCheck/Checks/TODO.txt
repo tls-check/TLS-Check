@@ -1,13 +1,37 @@
 
 More Checks:
 
+ * Vulnerabilites:
+  
+    * https://tools.ietf.org/html/rfc7457
+  
+    * BEAST
+      * https://de.wikipedia.org/wiki/Transport_Layer_Security#BEAST
+      * http://www.hit.bme.hu/~buttyan/courses/EIT-SEC/abib/04-TLS/BEAST.pdf
+      * https://packetstormsecurity.com/files/105499/Browser-Exploit-Against-SSL-TLS.html
+    * CRIME (und BREACH)
+      * https://en.wikipedia.org/wiki/CRIME
+      * https://en.wikipedia.org/wiki/BREACH_(security_exploit)
+    * TIME
+      * https://media.blackhat.com/eu-13/briefings/Beery/bh-eu-13-a-perfect-crime-beery-wp.pdf
+    * FREAK
+    * Lucky 13
+    * Poodle 
+      * Poodle on SSLv3
+      * Poodle on TLS 
+    * Poodle TLS!
+    * RC4
+    * SLOTH
+    * Logjam Check
+    
 
-  * FREAK check
-  * Logjam Check
-  * Poodle 
-  	* Poodle on SSLv3
-  	* Poodle on TLS 
   * more vulnerabilities ...
   
+* test sha1? Signing alg cert?!?
+* Mailserver String & Version?
+
+* Maybe implement somoe other simple tests from o-saft! https://www.owasp.org/index.php/Testing_for_Weak_SSL/TLS_Ciphers,_Insufficient_Transport_Layer_Protection_(OTG-CRYPST-001)#Example_9._Testing_O-Saft_-_OWASP_SSL_advanced_forensic_tool
+  * => usually the check only cipher suites via Regexp; not always sufficient
+
 
 
