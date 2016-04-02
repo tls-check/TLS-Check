@@ -35,3 +35,4 @@ get-results.sh
 /MANIFEST.SKIP.bak
 /t/logs/
 /svn-commit.tmp
+/Makefile.PL
