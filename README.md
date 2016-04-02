@@ -56,9 +56,8 @@ TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not
 
 The most easy way to install TLS-Check is using FreeBSD and install it as port or package.
 
-    # TODO: port coming soon!
     cd /usr/ports/security/tls-check && make install clean
-    # Or as package (the same TODO)
+    # Or as package
     pkg install security/tls-check
 
 ### Manual installation on Linux/Unix/…: 
