@@ -91,3 +91,6 @@ testresult.csv
 # Eclipse -- NO, include it!
 # \.includepath$
 
+# Eclipse disabled files
+^build.properties
+^META-INF

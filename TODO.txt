@@ -1,29 +1,12 @@
 
+* Add mode to take domain names on CLI
+* Add output mode: result for each domain in human readable form.
+  => Activate automatically when taking domain names on CLI.
 
 * store if web check was successful with www. or without; => use this in CipherStrengts 
 
-
 * New Subtests:
-  * 
-  * Vulnerabilites:
-  
-    * https://tools.ietf.org/html/rfc7457
-  
-  	* BEAST
-  	  * https://de.wikipedia.org/wiki/Transport_Layer_Security#BEAST
-  	  * http://www.hit.bme.hu/~buttyan/courses/EIT-SEC/abib/04-TLS/BEAST.pdf
-  	  * https://packetstormsecurity.com/files/105499/Browser-Exploit-Against-SSL-TLS.html
-  	* CRIME (und BREACH)
-  	  * https://en.wikipedia.org/wiki/CRIME
-  	  * https://en.wikipedia.org/wiki/BREACH_(security_exploit)
-  	* TIME
-  	  * https://media.blackhat.com/eu-13/briefings/Beery/bh-eu-13-a-perfect-crime-beery-wp.pdf
-  	* FREAK
-  	* Lucky 13
-  	* Poodle on SSLv3 (simple: if SSLv3, then poodle ;) )
-	* Poodle TLS!
-	* RC4
-	* SLOTH
+  * See TODO.txt in the Checks folder
 
 * Score: OpenSource vs non OSS Webserver?
 
@@ -34,16 +17,30 @@
   => Split category: A1, A2, A3; B1; B2; B3?
   
 
-* test sha1? Signing alg cert?!?
-* Mailserver String & Version?
-
 * MX: Debug hostname mismatch (...)
 * MX: new check, type group: starttls_error
 
-* Maybe implement somoe other simple tests from o-saft! https://www.owasp.org/index.php/Testing_for_Weak_SSL/TLS_Ciphers,_Insufficient_Transport_Layer_Protection_(OTG-CRYPST-001)#Example_9._Testing_O-Saft_-_OWASP_SSL_advanced_forensic_tool
-  * => usually the check only cipher suites via Regexp; not always sufficient
-
 * Check remaining ERROR/WARN log messages
+  * mostly done
+
+
+* Rewrite parallel mode with fork pool and queue to speed up everything
+
+
+
+* Loop through IP ranges an check IP-Adresses
+
+=> Some thoughts to this in german:
+
+In Security::TLSCheck::App etwa bei Zeile 220 müsste das eingebaut werden; evtl. könnte auch filter_domain eine Liste statt einer einzelnen Domain zurückgeben.
+Und um den Rest danach halt eine Formach-Schleife.
+
+Das Problem ist nur, dass eben die Methoden ->www und ->domain entsprechend www.meine-domain.tld oder meine-domain.tld zurückgeben; da müsste an mehreren Stellen der Code angepasst werden. z.B. könnte ->www und ->domain einfach die IP zurückgeben, aber dann müsste verhindert werden, dass anschließend u.U. noch ->domain getestet wird – zum Beispiel via Bool-Attribut „is_ipaddr“, was bei IP-Adressen gesetzt wird. Es gibt aber keine MX, da würde dann die IP an sich hergenommen werden.
+
+Aber besser wäre wahrscheinlich, insgesamt einen sauberen Mechanismus einzuführen, der www-Domain, Domain und IP unterscheidet und nach dem/den ersten Test(s) das richtige fix setzt. 
+
+
+Das Herausfinden der IP-Adressen könnte via http://search.cpan.org/~manu/Net-IP/IP.pm gehen
 
 
 
@@ -51,3 +48,4 @@
 
 
 
+    

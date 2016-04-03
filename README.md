@@ -56,22 +56,52 @@ TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not
 
 The most easy way to install TLS-Check is using FreeBSD and install it as port or package.
 
-    # TODO: port coming soon!
     cd /usr/ports/security/tls-check && make install clean
-    # Or as package (the same TODO)
+    # Or as package
     pkg install security/tls-check
 
 ### Manual installation on Linux/Unix/…: 
 
-Download and unpack it. Run 
+#### Install the following dependencies:
+
+##### • LibIDN
+
+If you want to use IDN domain names (with charactes other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
+
+##### • Perl
+
+TLS-Check should work with an old Perl 5.10 and is tested with 5.14 and up.
+
+* Perl is usually installed by your OS. Some Linux distributions deliver broken Perl packages and maybe you should install the perl default modules `perl-modules`. (untested, please report issues here)
+* If you don't want to (or can't) install all dependencies with the package manager of your OS, it may be better to install your own Perl to avoid conflicts with system packages. The best way is to use [perlbrew](http://perlbrew.pl) for this. A Perl without ithreads and full optimizations (-O3) is recommended.
+
+##### • `Module::Build`, Perl Build manager
+
+On some Perl versions this is already installed, you can check this with:
+
+```
+perl -MModule::Build -E 'say "Module-Build-version installed: $Module::Build::VERSION"'
+```
+
+When there is an error message, you must `Module::Build`, either with your package manager or via CPAN:
+
+```
+cpan Module::Build
+```
+
+`Module::Build`is only needed at build time, not for running TLS-Check.
+
+#### Install TLS-Check
+
+Now download Download and unpack TLS-Check. Then run in the main source directory:
 
     perl Build.PL
 
-It may complain about missing dependencies. Install them manually with your favorite package manager or use the buildin CPAN installer:
+It may complain about missing dependencies. Install them manually with your favorite package manager, install them manually via CPAN or use the buildin CPAN installer:
 
     ./Build installdeps
 
-Because this runs a lot of tests, this takes a long time. If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before.
+Because CPAN runs a lot of tests, this may take a long time. If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before, see above.
 
 Then you may install TLS-Check:
 
@@ -147,7 +177,7 @@ If you have enough memory it's OK to set --jobs to a high value. But at the mome
 
 ### Logfiles
 
-You find log files (trace, info and error) usually in ~/.perl/dist/TLS-Check by default, or in your data-directory if your OS supports this. When running without installation, the logfiles will stored in the logs folder in die main diretory.
+You find log files (trace, info and error) usually in ~/.perl/dist/TLS-Check by default, or in your data-directory if your OS supports this. When running without installation, the logfiles will be stored in the logs folder in die main diretory.
 
 
 ## Bugs
@@ -165,6 +195,15 @@ It's sure, that there are bugs. Please report them, patches and fixes are welcom
 * publish everything on CPAN (after splitting in distributions)
 * There are some other TODOs … ;-)
 * MX handling works as expected, but should be rewritten, e.g. to better handle categories
+
+
+## Mailing list and support
+
+There is a mailing list. Until there is much traffic, we have only one for developers and users together.
+
+* [Info Page](https://lists.odem.org/sympa/info/tls-check)
+* [Subscribe via web interface](https://lists.odem.org/sympa/subscribe/tls-check)
+* To subscribe via mail, send a mail to [sympa@lists.odem.org with Subject "subscribe tls-check"](mailto:sympa@lists.odem.org?subject=subscribe%20tls-check)
 
 
 ## Author

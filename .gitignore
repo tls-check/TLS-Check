@@ -35,3 +35,8 @@ get-results.sh
 /MANIFEST.SKIP.bak
 /t/logs/
 /svn-commit.tmp
+/Makefile.PL
+
+META-INF/MANIFEST.MF
+
+build.properties

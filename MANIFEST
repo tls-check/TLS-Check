@@ -19,7 +19,6 @@ conf/tls-check-logging.properties
 conf/tls-check.conf
 files/CipherSuites/tls-parameters-4.csv
 files/DomainFilter/tlds-alpha-by-domain.txt
-ignore.txt
 lib/Log/Log4perl/EasyCatch.pm
 lib/MooseX/ListAttributes.pm
 lib/Net/SSL/CipherSuites.pm
