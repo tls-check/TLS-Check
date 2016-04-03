@@ -14,6 +14,8 @@ use FindBin qw($Bin);
 use English qw( -no_match_vars );
 use Readonly;
 
+use File::HomeDir;
+
 use Log::Log4perl qw(:easy);
 
 use base qw(Exporter);
