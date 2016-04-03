@@ -7,10 +7,18 @@ use Test::More;
 use Test::Exception;
 use Test::Deep;
 use Test::Differences;
+use English qw( -no_match_vars );
+use IO::Socket::INET;
+
+# When running in FreeBSD Jails, there may be 127.0.0.1 not 127.0.0.1 ...
+# but forks has an IP filter and by default only allows 127.0.0.1
+BEGIN
+{
+   my $local_ip = IO::Socket::INET->new( Proto => 'udp', LocalAddr => '127.0.0.1' )->sockhost;
+   $ENV{THREADS_IP_MASK} = "^$local_ip\$";
+}
 
 use forks;
-
-use English qw( -no_match_vars );
 
 use Data::Dumper;
 
