@@ -199,7 +199,7 @@ It's sure, that there are bugs. Please report them, patches and fixes are welcom
 
 ## Mailing list and support
 
-There is a mailing list. Until there is much traffic, we habe only one for developers and users together.
+There is a mailing list. Until there is much traffic, we have only one for developers and users together.
 
 * [Info Page](https://lists.odem.org/sympa/info/tls-check)
 * [Subscribe via web interface](https://lists.odem.org/sympa/subscribe/tls-check)
