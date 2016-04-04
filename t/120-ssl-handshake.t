@@ -10,12 +10,13 @@ use Test::Differences;
 use English qw( -no_match_vars );
 use IO::Socket::INET;
 
-# When running in FreeBSD Jails, there may be 127.0.0.1 not 127.0.0.1 ...
+# When running in FreeBSD Jails, there is no real lo0; 127.0.0.1 responds with the jail's IP
 # but forks has an IP filter and by default only allows 127.0.0.1
+# Because of this, get the local IP ...
 BEGIN
 {
    my $local_ip = IO::Socket::INET->new( Proto => 'udp', LocalAddr => '127.0.0.1' )->sockhost;
-   $ENV{THREADS_IP_MASK} = "^$local_ip\$";
+   $ENV{THREADS_IP_MASK} = "^$local_ip\$" if $local_ip ne '127.0.0.1';
 }
 
 use forks;
@@ -26,21 +27,7 @@ use Data::Dumper;
 
 use Net::SSL::Handshake qw(:all);
 
-{
-   # supress Devel::Cover warnings
-   # TODO: remove this after change in start_openssl ...
-   no warnings;
-   sub Devel::Cover::CLONE { return; }
-}
-
-
-
-if ( ( $ENV{USER} // "" ne "alvar" ) && !$ENV{RELEASE_TESTING} && !$ENV{TEST_AUTHOR} )
-   {
-   plan( skip_all =>
-         "Some tests here are EXTREMELY hacky (start/stop openssl); until this is fixed set TEST_AUTHOR for running this tests" );
-   }
-
+plan tests => 215;
 
 
 use_ok("Net::SSL::Handshake");
@@ -56,7 +43,6 @@ use_ok("Net::SSL::GetServerProperties");
 my $server_port = 44300;
 my $openssl     = "/Users/alvar/Documents/Code/externes/openssl-chacha/installdir/bin/openssl";
 $openssl = "openssl" unless -x $openssl;
-
 
 
 throws_ok( sub { Net::SSL::Handshake->new(); }, qr(Attribute .ciphers. is required), "ciphers required" );
@@ -75,75 +61,47 @@ throws_ok(
          );
 
 
-#
-# EXTREMELY HACKY
-# start/stop for openssl-servers
-#
-# TODO: daemonize ...
-#
-
+use IPC::Run qw(start);
 
 sub start_openssl
    {
    my $param = shift;
-   my $fork;
+
+   my @cmd = ( $openssl, qw(s_server -quiet -cert t/ssl/server.pem), split( /[\s'"]+/, $param ) );
+   my ( $in, $out, $err );
+   my $run;
    lives_ok(
       sub {
-         $fork = async
-         {
-            chdir "t/ssl";
-            exec "$openssl s_server -quiet $param";
-         };
-         sleep 1;                                  # time to start
-
-         #         $fork = fork;
-         #         BAIL_OUT("Fork error!") unless defined $fork;
-         #         if ($fork != 0)
-         #            {
-         #            sleep 1;                                  # time to start
-         #            }
-         #         else
-         #            {
-         #            chdir "t/ssl";
-         #            exec "$openssl s_server -quiet $param";
-         #            }
+         $run = start( \@cmd, \$in, \$out, \$err );
+         return 1;
       },
       "Start OpenSSL-Server: $param"
            );
-   return $fork;
+
+   sleep 1;
+   $run->pump_nb;
+   if ($err)
+      {
+      # diag "Error starting OpenSSL:\n$err";
+      eval { stop_openssl($run) };
+      return;
+      }
+
+   return $run;
+
    } ## end sub start_openssl
 
-# TODO: remove Superhack
 sub stop_openssl
    {
-   my $fork = shift;
+   my $run = shift;
 
-   lives_ok(
-      sub {
-         system "killall openssl";                 # WTF! Superhack!
-                                                   # does not kill execed openssl! $fork->kill;
-                                                   #kill(-15, $fork->tid);
-                                                   # $fork->join;
-                                                   # kill -15, $fork;
-                                                   #waitpid $fork, 0;
-      },
-      "Stop OpenSSL-Server OK."
-           );
+   lives_ok( sub { $run->kill_kill; }, "Stop OpenSSL-Server OK." );
    return;
    }
 
-END
-{
-   local $CHILD_ERROR;
-   eval { system "killall openssl 2>&1 >/dev/null"; $_->join foreach threads->list; return 1; } or warn $EVAL_ERROR;
-   return;
-}
-
-
-
-my $server = start_openssl("-HTTP -accept $server_port -ssl2");
 
 my $handshake;
+my $server = start_openssl("-www -accept $server_port -ssl2");
 lives_ok(
    sub {
       $handshake = Net::SSL::Handshake->new(
@@ -156,82 +114,87 @@ lives_ok(
    "New Handshake Object"
         );
 
-lives_ok( sub { my $socket = $handshake->socket; }, "Can get Socket for Handshake" );
-lives_ok( sub { $handshake->hello; }, "Hello!" );
+SKIP:
+   {
+   skip "Can't start OpenSSL with -ssl2", 14 unless $server;
 
-ok( $handshake->accepted_ciphers->count, "Some Ciphers accepted" );
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   lives_ok( sub { my $socket = $handshake->socket; }, "Can get Socket for Handshake" );
+   lives_ok( sub { $handshake->hello; }, "Hello!" );
+
+   ok( $handshake->accepted_ciphers->count, "Some Ciphers accepted" );
+
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                             host    => "localhost",
                             port    => $server_port,
                             ciphers => Net::SSL::CipherSuites->new_by_name(qw(DES-CBC3-SHA DES-CBC3-MD5 RC2-CBC-MD5 EXP-RC4-MD5)),
                             ssl_version => $SSLv2,
-      );
-   },
-   "Handshake Object, only some ciphers"
-        );
+         );
+      },
+      "Handshake Object, only some ciphers"
+           );
 
-lives_ok( sub { $handshake->hello; }, "Hello, selected ciphers" );
+   lives_ok( sub { $handshake->hello; }, "Hello, selected ciphers" );
 
-is( $handshake->accepted_ciphers->count, 3, "Some Ciphers accepted" );
-ok( $handshake->ok, "Handshake OK" );
+   is( $handshake->accepted_ciphers->count, 3, "Some Ciphers accepted" );
+   ok( $handshake->ok, "Handshake OK" );
 
-cmp_deeply( [ map { $ARG->{shortname} } @{ $handshake->accepted_ciphers->ciphers } ],
-            [qw(DES-CBC3-MD5 RC2-CBC-MD5 EXP-RC4-MD5)],
-            "Found Ciphers correct" );
+   cmp_deeply( [ map { $ARG->{shortname} } @{ $handshake->accepted_ciphers->ciphers } ],
+               [qw(DES-CBC3-MD5 RC2-CBC-MD5 EXP-RC4-MD5)],
+               "Found Ciphers correct" );
 
 
-# try v3 connection with v2 ciphers
+   # try v3 connection with v2 ciphers
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                             host    => "localhost",
                             port    => $server_port,
                             ciphers => Net::SSL::CipherSuites->new_by_name(qw(DES-CBC3-SHA DES-CBC3-MD5 RC2-CBC-MD5 EXP-RC4-MD5)),
                             ssl_version => $SSLv3,
-      );
-   },
-   "Handshake Object v3, only some v2 ciphers"
-        );
+         );
+      },
+      "Handshake Object v3, only some v2 ciphers"
+           );
 
-throws_ok( sub { $handshake->hello; }, qr(Can't use SSLv2-only Cipher), "Hello, selected ciphers" );
-ok( !$handshake->ok, "Handshake not OK" );
-
-
-# try v2 connection with v3 client and compatible ciphers
-
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
-                                             host        => "localhost",
-                                             port        => $server_port,
-                                             ciphers     => Net::SSL::CipherSuites->new_by_name(qw(IDEA-CBC-SHA NULL-MD5)),
-                                             ssl_version => $SSLv3,
-                                           );
-   },
-   "Handshake Object v3, v2/v3 compatible ciphers"
-        );
-
-throws_ok( sub { $handshake->hello; }, qr(Nothing received), "Can't do SSLv3 Handshake to SSLv2 Server" );
-ok( !$handshake->ok, "Handshake not OK" );
+   throws_ok( sub { $handshake->hello; }, qr(Can't use SSLv2-only Cipher), "Hello, selected ciphers" );
+   ok( !$handshake->ok, "Handshake not OK" );
 
 
+   # try v2 connection with v3 client and compatible ciphers
 
-stop_openssl($server);
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
+                                                host        => "localhost",
+                                                port        => $server_port,
+                                                ciphers     => Net::SSL::CipherSuites->new_by_name(qw(IDEA-CBC-SHA NULL-MD5)),
+                                                ssl_version => $SSLv3,
+                                              );
+      },
+      "Handshake Object v3, v2/v3 compatible ciphers"
+           );
+
+   throws_ok( sub { $handshake->hello; }, qr(Nothing received), "Can't do SSLv3 Handshake to SSLv2 Server" );
+   ok( !$handshake->ok, "Handshake not OK" );
 
 
+
+   stop_openssl($server);
+
+   } ## end SKIP:
 
 #
 # New server v2
 #
 
-$server = start_openssl("-HTTP -accept $server_port -ssl2 -cipher 'DES-CBC3-MD5:RC2-CBC-MD5:EXP-RC4-MD5'");
+$server = start_openssl("-www -accept $server_port -ssl2 -cipher 'DES-CBC3-MD5:RC2-CBC-MD5:EXP-RC4-MD5'");
 
 undef $handshake;
 
@@ -247,25 +210,31 @@ lives_ok(
    "Handshake Object, allowed all v2-Ciphers"
         );
 
-lives_ok( sub { $handshake->hello; }, "Hello, selected ciphers" );
-
-is( $handshake->accepted_ciphers->count, 3, "Correct number of Ciphers accepted" );
-$handshake->accepted_ciphers->order_by_code;
-
-cmp_deeply( [ map { $ARG->{shortname} } @{ $handshake->accepted_ciphers->ciphers } ],
-            [qw(EXP-RC4-MD5 RC2-CBC-MD5 DES-CBC3-MD5)],
-            "From all SSLv2 ciphers find only accepted" );
+SKIP:
+   {
+   skip "Can't start OpenSSL with -ssl2 -cipher 'DES-CBC3-MD5:RC2-CBC-MD5:EXP-RC4-MD5'", 3 unless $server;
 
 
+   lives_ok( sub { $handshake->hello; }, "Hello, selected ciphers" );
 
-stop_openssl($server);
+   is( $handshake->accepted_ciphers->count, 3, "Correct number of Ciphers accepted" );
+   $handshake->accepted_ciphers->order_by_code;
 
+   cmp_deeply( [ map { $ARG->{shortname} } @{ $handshake->accepted_ciphers->ciphers } ],
+               [qw(EXP-RC4-MD5 RC2-CBC-MD5 DES-CBC3-MD5)],
+               "From all SSLv2 ciphers find only accepted" );
+
+
+
+   stop_openssl($server);
+
+   }
 
 #
 # SSLv3 server
 #
 
-$server = start_openssl("-HTTP -accept $server_port -ssl3");
+$server = start_openssl("-www -accept $server_port -ssl3");
 
 undef $handshake;
 
@@ -280,19 +249,22 @@ lives_ok(
    },
    "Handshake Object, allowed all v3-Ciphers"
         );
+SKIP:
+   {
+   skip "Can't start OpenSSL with -ssl3", 2 unless $server;
 
-lives_ok( sub { $handshake->hello; }, "Hello, SSLv3" );
 
-#diag Dumper $handshake;
+   lives_ok( sub { $handshake->hello; }, "Hello, SSLv3" );
 
-ok( $handshake->accepted_ciphers->count, "Some Ciphers accepted" );
+   ok( $handshake->accepted_ciphers->count, "Some Ciphers accepted" );
 
-stop_openssl($server);
+   stop_openssl($server);
 
+   }
 
 $server
    = start_openssl(
-   "-HTTP -accept $server_port -ssl3 -cipher 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:EDH-DSS-DES-CBC-SHA:DH-RSA-DES-CBC-SHA:DH-DSS-DES-CBC-SHA:DES-CBC-SHA'"
+   "-www -accept $server_port -ssl3 -cipher 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:EDH-DSS-DES-CBC-SHA:DH-RSA-DES-CBC-SHA:DH-DSS-DES-CBC-SHA:DES-CBC-SHA'"
    );
 
 undef $handshake;
@@ -309,56 +281,69 @@ lives_ok(
    "Handshake Object, only Camellia Ciphers"
         );
 
-lives_ok( sub { $handshake->hello; }, "Hello SSLv3, but without acceptyble ciphers" );
+SKIP:
+   {
+   skip
+      "Can't start OpenSSL with -ssl3 -cipher 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:EDH-DSS-DES-CBC-SHA:DH-RSA-DES-CBC-SHA:DH-DSS-DES-CBC-SHA:DES-CBC-SHA'",
+      11
+      unless $server;
 
-#diag Dumper $handshake;
+   lives_ok( sub { $handshake->hello; }, "Hello SSLv3, but without acceptable ciphers" );
 
-is( $handshake->accepted_ciphers->count, 0, "0 Ciphers accepted" );
-ok( $handshake->alert,           "Alert-Flag set" );
-ok( $handshake->no_cipher_found, "no_cipher_found-Flag set" );
-ok( !$handshake->ok,             "Handshake not OK" );
+   #diag Dumper $handshake;
 
-
-#
-# SSLv2 client to v3 server
-#
-
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
-                                             host        => "localhost",
-                                             port        => $server_port,
-                                             ciphers     => Net::SSL::CipherSuites->new_by_tag("SSLv2"),
-                                             ssl_version => $SSLv2,
-                                           );
-   },
-   "Handshake Object, SSLv2 (for v3 server)"
-        );
-
-throws_ok( sub { $handshake->hello; }, qr(), "Hello SSLv2 to v3 server" );
+   is( $handshake->accepted_ciphers->count, 0, "0 Ciphers accepted" );
+   ok( $handshake->alert,           "Alert-Flag set" );
+   ok( $handshake->no_cipher_found, "no_cipher_found-Flag set" );
+   ok( !$handshake->ok,             "Handshake not OK" );
 
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
-                                             host        => "localhost",
-                                             port        => $server_port,
-                                             ciphers     => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12)),
-                                             ssl_version => $TLSv12,
-                                           );
-   },
-   "Handshake Object, TLSv12 (for v3 server)"
-        );
+   #
+   # SSLv2 client to v3 server
+   #
 
-lives_ok( sub { $handshake->hello; }, "Hello TLSv12 to v3 server" );
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
+                                                host        => "localhost",
+                                                port        => $server_port,
+                                                ciphers     => Net::SSL::CipherSuites->new_by_tag("SSLv2"),
+                                                ssl_version => $SSLv2,
+                                              );
+      },
+      "Handshake Object, SSLv2 (for v3 server)"
+           );
 
-ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
-is( $handshake->server_version, $SSLv3, "Server is SSLv3 server" );
+   throws_ok( sub { $handshake->hello; }, qr(), "Hello SSLv2 to v3 server" );
 
-stop_openssl($server);
 
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
+                                                host        => "localhost",
+                                                port        => $server_port,
+                                                ciphers     => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12)),
+                                                ssl_version => $TLSv12,
+                                              );
+      },
+      "Handshake Object, TLSv12 (for v3 server)"
+           );
+
+   lives_ok( sub { $handshake->hello; }, "Hello TLSv12 to v3 server" );
+
+   TODO:
+      {
+      # TODO: check wich is the right/wrong result
+      local $TODO = "Looks like this is dependant von OpenSSL version; check it!";
+      ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
+      }
+   is( $handshake->server_version, $SSLv3, "Server is SSLv3 server" );
+
+   stop_openssl($server);
+
+   } ## end SKIP:
 
 #
 # Start TLSv12 Server
@@ -367,7 +352,7 @@ stop_openssl($server);
 
 $server
    = start_openssl(
-   "-HTTP -accept $server_port -tls1_2 -cipher 'DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384'"
+   "-www -accept $server_port -tls1_2 -cipher 'DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384'"
    );
 
 undef $handshake;
@@ -383,43 +368,54 @@ lives_ok(
    "Handshake Object, TLSv12, bettercrypto a cipher suites"
         );
 
-lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with bettercrypto A ..." );
 
-ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
-is( $handshake->server_version, $TLSv12, "Server is TLSv12 server" );
-ok( $handshake->ok, "Handshake OK" );
+SKIP:
+   {
+   skip
+      "Can't start OpenSSL with -tls1_2 -cipher 'DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384'",
+      9
+      unless $server;
 
 
 
-# Check connection with SSLv3 client
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with bettercrypto A ..." );
+
+   ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
+   is( $handshake->server_version, $TLSv12, "Server is TLSv12 server" );
+   ok( $handshake->ok, "Handshake OK" );
+
+
+
+   # Check connection with SSLv3 client
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 bettercrypto_b bettercrypto_a)),
                                            ssl_version => $SSLv3,
-      );
-   },
-   "Handshake Object, TLSv12, bettercrypto a cipher suites"
-        );
+         );
+      },
+      "Handshake Object, TLSv12, bettercrypto a cipher suites"
+           );
 
-lives_ok( sub { $handshake->hello; }, "SSLv3 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "SSLv3 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
-is( $handshake->server_version,          $SSLv3, "TLS-Server responds SSLv3" );
-ok( !$handshake->ok, "Handshake not OK" );
+   is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
+   is( $handshake->server_version,          $SSLv3, "TLS-Server responds SSLv3" );
+   ok( !$handshake->ok, "Handshake not OK" );
 
 
-stop_openssl($server);
+   stop_openssl($server);
 
+   } ## end SKIP:
 
 #
 # new TLS 1.2, TLS 1.1, TLS 1.0 server with standard cipher suites
 #
 
-$server = start_openssl("-HTTP -accept $server_port -tls1 -tls1_1 -tls1_2");
+$server = start_openssl("-www -accept $server_port -tls1 -tls1_1 -tls1_2");
 
 # client betterrypto A TLS 1.2
 undef $handshake;
@@ -435,109 +431,118 @@ lives_ok(
    "Handshake Object, TLSv12, bettercrypto a cipher suites"
         );
 
-lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with bettercrypto A ..." );
 
-ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
-is( $handshake->server_version, $TLSv12, "Server is TLSv12 server" );
-ok( $handshake->ok, "Handshake OK" );
+SKIP:
+   {
+   skip "Can't start OpenSSL with -tls1 -tls1_1 -tls1_2", 24
+      unless $server;
 
 
-# client SSLv3, and bettercrypto ciphers; but TLS 1.2 server
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with bettercrypto A ..." );
+
+   ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
+   is( $handshake->server_version, $TLSv12, "Server is TLSv12 server" );
+   ok( $handshake->ok, "Handshake OK" );
+
+
+   # client SSLv3, and bettercrypto ciphers; but TLS 1.2 server
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $SSLv3,
-      );
-   },
-   "Handshake Object, TLSv12"
-        );
+         );
+      },
+      "Handshake Object, TLSv12"
+           );
 
-lives_ok( sub { $handshake->hello; }, "SSLv3 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "SSLv3 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
-is( $handshake->server_version,          $SSLv3, "TLS-Server responds SSLv3" );
-ok( !$handshake->ok, "Handshake not OK for SSLv3 client to TLS 1.2 only server" );
+   is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
+   is( $handshake->server_version,          $SSLv3, "TLS-Server responds SSLv3" );
+   ok( !$handshake->ok, "Handshake not OK for SSLv3 client to TLS 1.2 only server" );
 
 
 
-# Client tls 1.0,
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   # Client tls 1.0,
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $TLSv1,
-      );
-   },
-   "Handshake Object, TLSv1"
-        );
+         );
+      },
+      "Handshake Object, TLSv1"
+           );
 
-lives_ok( sub { $handshake->hello; }, "TLSv1 Handshake to TLSv12 Server" );
+   lives_ok( sub { $handshake->hello; }, "TLSv1 Handshake to TLSv12 Server" );
 
-is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
-is( $handshake->server_version,          $TLSv1, "TLS-Server responds TLSv1" );
-ok( !$handshake->ok, "Handshake NOT OK for TLSv1 client to TLS 1.2/1.1/1.0 server (seems that openssl does not support this)" );
+   is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
+   is( $handshake->server_version,          $TLSv1, "TLS-Server responds TLSv1" );
+   ok( !$handshake->ok,
+       "Handshake NOT OK for TLSv1 client to TLS 1.2/1.1/1.0 server (seems that openssl does not support this)" );
 
 
-# Client TLS 1.1
+   # Client TLS 1.1
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $TLSv11,
-      );
-   },
-   "Handshake Object, TLSv1, bettercrypto a cipher suites"
-        );
+         );
+      },
+      "Handshake Object, TLSv1, bettercrypto a cipher suites"
+           );
 
-lives_ok( sub { $handshake->hello; }, "TLSv11 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "TLSv11 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 0,       "Cipher not accepted" );
-is( $handshake->server_version,          $TLSv11, "TLS-Server responds TLSv11" );
-ok( !$handshake->ok, "Handshake NOT OK for TLSv11 client to TLS 1.2/1.1/1.0 server  (seems that openssl does not support this)" );
+   is( $handshake->accepted_ciphers->count, 0,       "Cipher not accepted" );
+   is( $handshake->server_version,          $TLSv11, "TLS-Server responds TLSv11" );
+   ok( !$handshake->ok,
+       "Handshake NOT OK for TLSv11 client to TLS 1.2/1.1/1.0 server  (seems that openssl does not support this)" );
 
 
-# Client TLS 1.2
+   # Client TLS 1.2
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $TLSv12,
-      );
-   },
-   "Handshake Object, TLSv1, bettercrypto a cipher suites"
-        );
+         );
+      },
+      "Handshake Object, TLSv1, bettercrypto a cipher suites"
+           );
 
-lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 1,       "Cipher accepted" );
-is( $handshake->server_version,          $TLSv12, "TLS-Server responds TLSv12" );
-ok( $handshake->ok, "Handshake  OK for TLSv12 client to TLS 1.2 only server" );
-
-
-stop_openssl($server);
+   is( $handshake->accepted_ciphers->count, 1,       "Cipher accepted" );
+   is( $handshake->server_version,          $TLSv12, "TLS-Server responds TLSv12" );
+   ok( $handshake->ok, "Handshake  OK for TLSv12 client to TLS 1.2 only server" );
 
 
+   stop_openssl($server);
+
+   } ## end SKIP:
 
 #
 # new TLS 1.2 only server with standard cipher suites
 #
 
-$server = start_openssl("-HTTP -accept $server_port -tls1_2");
+$server = start_openssl("-www -accept $server_port -tls1_2");
 
 # client betterrypto A TLS 1.2
 undef $handshake;
@@ -553,104 +558,110 @@ lives_ok(
    "Handshake Object, TLSv12, bettercrypto a cipher suites"
         );
 
-lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with bettercrypto A ..." );
 
-ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
-is( $handshake->server_version, $TLSv12, "Server is TLSv12 server" );
-ok( $handshake->ok, "Handshake OK" );
+SKIP:
+   {
+   skip "Can't start OpenSSL with  -tls1_2", 24
+      unless $server;
+
+   lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with bettercrypto A ..." );
+
+   ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
+   is( $handshake->server_version, $TLSv12, "Server is TLSv12 server" );
+   ok( $handshake->ok, "Handshake OK" );
 
 
-# client SSLv3, and bettercrypto ciphers; but TLS 1.2 server
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   # client SSLv3, and bettercrypto ciphers; but TLS 1.2 server
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $SSLv3,
-      );
-   },
-   "Handshake Object, TLSv12"
-        );
+         );
+      },
+      "Handshake Object, TLSv12"
+           );
 
-lives_ok( sub { $handshake->hello; }, "SSLv3 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "SSLv3 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
-is( $handshake->server_version,          $SSLv3, "TLS-Server responds SSLv3" );
-ok( !$handshake->ok, "Handshake not OK for SSLv3 client to TLS 1.2 only server" );
+   is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
+   is( $handshake->server_version,          $SSLv3, "TLS-Server responds SSLv3" );
+   ok( !$handshake->ok, "Handshake not OK for SSLv3 client to TLS 1.2 only server" );
 
 
 
-# Client tls 1.0,
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   # Client tls 1.0,
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $TLSv1,
-      );
-   },
-   "Handshake Object, TLSv1, bettercrypto a cipher suites"
-        );
+         );
+      },
+      "Handshake Object, TLSv1, bettercrypto a cipher suites"
+           );
 
-lives_ok( sub { $handshake->hello; }, "TLSv1 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "TLSv1 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
-is( $handshake->server_version,          $TLSv1, "TLS-Server responds TLSv1" );
-ok( !$handshake->ok, "Handshake not OK for TLSv1 client to TLS 1.2 only server" );
+   is( $handshake->accepted_ciphers->count, 0,      "Cipher not accepted" );
+   is( $handshake->server_version,          $TLSv1, "TLS-Server responds TLSv1" );
+   ok( !$handshake->ok, "Handshake not OK for TLSv1 client to TLS 1.2 only server" );
 
 
-# Client TLS 1.1
+   # Client TLS 1.1
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $TLSv11,
-      );
-   },
-   "Handshake Object, TLSv1, bettercrypto a cipher suites"
-        );
+         );
+      },
+      "Handshake Object, TLSv1, bettercrypto a cipher suites"
+           );
 
-lives_ok( sub { $handshake->hello; }, "TLSv11 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "TLSv11 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 0,       "Cipher not accepted" );
-is( $handshake->server_version,          $TLSv11, "TLS-Server responds TLSv11" );
-ok( !$handshake->ok, "Handshake not OK for TLSv11 client to TLS 1.2 only server" );
+   is( $handshake->accepted_ciphers->count, 0,       "Cipher not accepted" );
+   is( $handshake->server_version,          $TLSv11, "TLS-Server responds TLSv11" );
+   ok( !$handshake->ok, "Handshake not OK for TLSv11 client to TLS 1.2 only server" );
 
 
-# Client TLS 1.2
+   # Client TLS 1.2
 
-undef $handshake;
-lives_ok(
-   sub {
-      $handshake = Net::SSL::Handshake->new(
+   undef $handshake;
+   lives_ok(
+      sub {
+         $handshake = Net::SSL::Handshake->new(
                                            host    => "localhost",
                                            port    => $server_port,
                                            ciphers => Net::SSL::CipherSuites->new_by_tag(qw(SSLv3 TLSv12 bettercrypto_b))->unique,
                                            ssl_version => $TLSv12,
-      );
-   },
-   "Handshake Object, TLSv1, bettercrypto a cipher suites"
-        );
+         );
+      },
+      "Handshake Object, TLSv1, bettercrypto a cipher suites"
+           );
 
-lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with  ..." );
+   lives_ok( sub { $handshake->hello; }, "TLSv12 Handshake to TLSv12 Server with  ..." );
 
-is( $handshake->accepted_ciphers->count, 1,       "Cipher accepted" );
-is( $handshake->server_version,          $TLSv12, "TLS-Server responds TLSv12" );
-ok( $handshake->ok, "Handshake  OK for TLSv12 client to TLS 1.2 only server" );
-
-
-
-stop_openssl($server);
+   is( $handshake->accepted_ciphers->count, 1,       "Cipher accepted" );
+   is( $handshake->server_version,          $TLSv12, "TLS-Server responds TLSv12" );
+   ok( $handshake->ok, "Handshake  OK for TLSv12 client to TLS 1.2 only server" );
 
 
+
+   stop_openssl($server);
+
+   } ## end SKIP:
 
 ##########################################################################################
 #
@@ -659,59 +670,66 @@ stop_openssl($server);
 ##########################################################################################
 
 
-$server = start_openssl("-HTTP -accept $server_port -tls1_2");
+$server = start_openssl("-www -accept $server_port -tls1_2");
 
 my $prop;
 lives_ok( sub { $prop = Net::SSL::GetServerProperties->new( host => "localhost", port => $server_port, ); },
           "New get Server Properties ..." );
-lives_ok( sub { $prop->get_properties; }, "Run get all properties" );
-
-ok( $prop->supports_tlsv12,  "Supports TLS 1.2" );
-ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
-ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
-ok( !$prop->supports_sslv3,  "Does not support SSLv3" );
-ok( !$prop->supports_sslv2,  "Does not support SSLv2" );
-
-ok( $prop->supports_any_bc_a,      "Supports at least any Bettercrypto A cipher suite" );
-ok( $prop->supports_any_bc_b,      "Supports at least any Bettercrypto B cipher suite" );
-ok( $prop->supports_any_bsi_pfs,   "Supports at least any BSI pfs cipher suite with PFS" );
-ok( $prop->supports_any_bsi_nopfs, "Supports at least any BSI (no) pfs cipher suite" );
-
-ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
-ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
-ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
-ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
 
 
-TODO:
+SKIP:
    {
-   local $TODO = "Scores are changes, check new results";
+   skip "Can't start OpenSSL with -tls1_2", 22
+      unless $server;
 
-   is( $prop->score,              35,  "Score for this server" );
-   is( $prop->score_ciphersuites, 35,  "CipherSuites Score for this server" );
-   is( $prop->score_tlsversion,   100, "TLS Version Score for this server" );
+   lives_ok( sub { $prop->get_properties; }, "Run get all properties" );
 
-   }
+   ok( $prop->supports_tlsv12,  "Supports TLS 1.2" );
+   ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
+   ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
+   ok( !$prop->supports_sslv3,  "Does not support SSLv3" );
+   ok( !$prop->supports_sslv2,  "Does not support SSLv2" );
 
-is( $prop->firefox_cipher,
-    "ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-    "Firefox would use ECDHE_RSA_WITH_AES_128_GCM_SHA256 as cipher suite" );
-is( $prop->safari_cipher,
-    "ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-    "Safari would use ECDHE_RSA_WITH_AES_256_CBC_SHA384 as cipher suite" );
-is( $prop->chrome_cipher,
-    "ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-    "Chrome would use ECDHE_RSA_WITH_AES_128_GCM_SHA256 as cipher suite" );
-is( $prop->ie8win7_cipher,
-    "ECDHE_RSA_WITH_AES_256_CBC_SHA",
-    "IE 8 on Windows 7 would use ECDHE_RSA_WITH_AES_256_CBC_SHA as cipher suite" );
-is( $prop->ie11win10_cipher,
-    "ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-    "IE 8 on Windows 7 would use ECDHE_RSA_WITH_AES_256_GCM_SHA384 as cipher suite" );
+   ok( $prop->supports_any_bc_a,      "Supports at least any Bettercrypto A cipher suite" );
+   ok( $prop->supports_any_bc_b,      "Supports at least any Bettercrypto B cipher suite" );
+   ok( $prop->supports_any_bsi_pfs,   "Supports at least any BSI pfs cipher suite with PFS" );
+   ok( $prop->supports_any_bsi_nopfs, "Supports at least any BSI (no) pfs cipher suite" );
 
-stop_openssl($server);
+   ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
+   ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
+   ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
+   ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
 
 
+   TODO:
+      {
+      local $TODO = "Scores are changes, check new results";
+
+      is( $prop->score,              35,  "Score for this server" );
+      is( $prop->score_ciphersuites, 35,  "CipherSuites Score for this server" );
+      is( $prop->score_tlsversion,   100, "TLS Version Score for this server" );
+
+      }
+
+   is( $prop->firefox_cipher,
+       "ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+       "Firefox would use ECDHE_RSA_WITH_AES_128_GCM_SHA256 as cipher suite" );
+   is( $prop->safari_cipher,
+       "ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+       "Safari would use ECDHE_RSA_WITH_AES_256_CBC_SHA384 as cipher suite" );
+   is( $prop->chrome_cipher,
+       "ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+       "Chrome would use ECDHE_RSA_WITH_AES_128_GCM_SHA256 as cipher suite" );
+   is( $prop->ie8win7_cipher,
+       "ECDHE_RSA_WITH_AES_256_CBC_SHA",
+       "IE 8 on Windows 7 would use ECDHE_RSA_WITH_AES_256_CBC_SHA as cipher suite" );
+   is( $prop->ie11win10_cipher,
+       "ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+       "IE 8 on Windows 7 would use ECDHE_RSA_WITH_AES_256_GCM_SHA384 as cipher suite" );
+
+   stop_openssl($server);
+
+   } ## end SKIP:
 
 #
 # Bettercrypto A
@@ -719,172 +737,156 @@ stop_openssl($server);
 
 $server
    = start_openssl(
-   "-HTTP -accept $server_port -tls1_2 -cipher 'DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384'"
+   "-www -accept $server_port -tls1_2 -cipher 'DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384'"
    );
 
 undef $prop;
 lives_ok( sub { $prop = Net::SSL::GetServerProperties->new( host => "localhost", port => $server_port, ); },
           "New get Server Properties ..." );
-lives_ok( sub { $prop->get_properties; }, "Run get all properties" );
 
-ok( $prop->supports_tlsv12,  "Supports TLS 1.2" );
-ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
-ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
-ok( !$prop->supports_sslv3,  "Does not support SSLv3" );
-ok( !$prop->supports_sslv2,  "Does not support SSLv2" );
 
-ok( $prop->supports_any_bc_a,      "Supports at least any Bettercrypto A cipher suite" );
-ok( $prop->supports_any_bc_b,      "Supports at least any Bettercrypto B cipher suite" );
-ok( $prop->supports_any_bsi_pfs,   "Supports at least any BSI pfs cipher suite with PFS" );
-ok( $prop->supports_any_bsi_nopfs, "Supports at least any BSI (no) pfs cipher suite" );
-
-ok( $prop->supports_only_bc_a,      "Support only Bettercrypto A cipher suites" );
-ok( $prop->supports_only_bc_b,      "Support only Bettercrypto B cipher suites" );
-ok( $prop->supports_only_bsi_pfs,   "Support only BSI pfs cipher suites with PFS" );
-ok( $prop->supports_only_bsi_nopfs, "Support only BSI (no) pfs cipher suites" );
-
-TODO:
+SKIP:
    {
-   local $TODO = "Changed score calculation ...";
-   is( $prop->score, 100, "Score for this server" );
-   }
+   skip "Can't start OpenSSL with -tls1_2", 17
+      unless $server;
 
-my @cipher_names = sort $prop->supported_cipher_names;
-my $cipher_names = [ sort @{ $prop->supported_cipher_names } ];
+   lives_ok( sub { $prop->get_properties; }, "Run get all properties" );
 
-# IANA Names! With CBC, missing in big list at CipherSuites.pm
-my @bc_a = qw(
-   DHE_RSA_WITH_AES_256_GCM_SHA384
-   DHE_RSA_WITH_AES_256_CBC_SHA256
-   ECDHE_RSA_WITH_AES_256_GCM_SHA384
-   ECDHE_RSA_WITH_AES_256_CBC_SHA384
-   );
+   ok( $prop->supports_tlsv12,  "Supports TLS 1.2" );
+   ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
+   ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
+   ok( !$prop->supports_sslv3,  "Does not support SSLv3" );
+   ok( !$prop->supports_sslv2,  "Does not support SSLv2" );
 
-cmp_deeply( $cipher_names, [@cipher_names], "list/scalar context cipher names OK" );
-cmp_deeply( $cipher_names, bag(@bc_a), "Really only bettercrypto a ciphers" );
+   ok( $prop->supports_any_bc_a,      "Supports at least any Bettercrypto A cipher suite" );
+   ok( $prop->supports_any_bc_b,      "Supports at least any Bettercrypto B cipher suite" );
+   ok( $prop->supports_any_bsi_pfs,   "Supports at least any BSI pfs cipher suite with PFS" );
+   ok( $prop->supports_any_bsi_nopfs, "Supports at least any BSI (no) pfs cipher suite" );
+
+   ok( $prop->supports_only_bc_a,      "Support only Bettercrypto A cipher suites" );
+   ok( $prop->supports_only_bc_b,      "Support only Bettercrypto B cipher suites" );
+   ok( $prop->supports_only_bsi_pfs,   "Support only BSI pfs cipher suites with PFS" );
+   ok( $prop->supports_only_bsi_nopfs, "Support only BSI (no) pfs cipher suites" );
+
+   TODO:
+      {
+      local $TODO = "Changed score calculation ...";
+      is( $prop->score, 100, "Score for this server" );
+      }
+
+   my @cipher_names = sort $prop->supported_cipher_names;
+   my $cipher_names = [ sort @{ $prop->supported_cipher_names } ];
+
+   # IANA Names! With CBC, missing in big list at CipherSuites.pm
+   my @bc_a = qw(
+      DHE_RSA_WITH_AES_256_GCM_SHA384
+      DHE_RSA_WITH_AES_256_CBC_SHA256
+      ECDHE_RSA_WITH_AES_256_GCM_SHA384
+      ECDHE_RSA_WITH_AES_256_CBC_SHA384
+      );
+
+   cmp_deeply( $cipher_names, [@cipher_names], "list/scalar context cipher names OK" );
+   cmp_deeply( $cipher_names, bag(@bc_a), "Really only bettercrypto a ciphers" );
 
 
 
-stop_openssl($server);
+   stop_openssl($server);
 
+   } ## end SKIP:
 
 
 #
 # SSLv3 Server
 #
 
-$server = start_openssl("-HTTP -accept $server_port -ssl3");
+$server = start_openssl("-www -accept $server_port -ssl3");
 
 undef $prop;
 lives_ok( sub { $prop = Net::SSL::GetServerProperties->new( host => "localhost", port => $server_port, ); },
           "New get Server Properties ..." );
-lives_ok( sub { $prop->get_properties; }, "Run get all properties" );
 
-ok( !$prop->supports_tlsv12, "Does not support TLS 1.2" );
-ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
-ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
-ok( $prop->supports_sslv3,   "Supports SSLv3" );
-ok( !$prop->supports_sslv2,  "Does not support SSLv2" );
-
-ok( !$prop->supports_any_bc_a,      "Does not support at least any Bettercrypto A cipher suite" );
-ok( $prop->supports_any_bc_b,       "Supports at least any Bettercrypto B cipher suite" );
-ok( !$prop->supports_any_bsi_pfs,   "Does not support at least any BSI pfs cipher suite with PFS" );
-ok( !$prop->supports_any_bsi_nopfs, "Does not support at least any BSI (no) pfs cipher suite" );
-
-ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
-ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
-ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
-ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
-
-TODO:
+SKIP:
    {
-   local $TODO = "Changed score calculation ...";
-   is( $prop->score, 0, "Score for this server" );
-   }
+   skip "Can't start OpenSSL with -tls1_2", 15
+      unless $server;
+
+   lives_ok( sub { $prop->get_properties; }, "Run get all properties" );
+
+   ok( !$prop->supports_tlsv12, "Does not support TLS 1.2" );
+   ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
+   ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
+   ok( $prop->supports_sslv3,   "Supports SSLv3" );
+   ok( !$prop->supports_sslv2,  "Does not support SSLv2" );
+
+   ok( !$prop->supports_any_bc_a,      "Does not support at least any Bettercrypto A cipher suite" );
+   ok( $prop->supports_any_bc_b,       "Supports at least any Bettercrypto B cipher suite" );
+   ok( !$prop->supports_any_bsi_pfs,   "Does not support at least any BSI pfs cipher suite with PFS" );
+   ok( !$prop->supports_any_bsi_nopfs, "Does not support at least any BSI (no) pfs cipher suite" );
+
+   ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
+   ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
+   ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
+   ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
+
+   TODO:
+      {
+      local $TODO = "Changed score calculation ...";
+      is( $prop->score, 0, "Score for this server" );
+      }
 
 
-stop_openssl($server);
+   stop_openssl($server);
 
+   } ## end SKIP:
 
 #
 # SSLv2 Server
 #
 
-$server = start_openssl("-HTTP -accept $server_port -ssl2");
+$server = start_openssl("-www -accept $server_port -ssl2");
 
 undef $prop;
 lives_ok( sub { $prop = Net::SSL::GetServerProperties->new( host => "localhost", port => $server_port, ); },
           "New get Server Properties ..." );
-lives_ok( sub { $prop->get_properties; }, "Run get all properties" ) or diag "with Server $openssl";
 
-ok( !$prop->supports_tlsv12, "Does not support TLS 1.2" );
-ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
-ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
-ok( !$prop->supports_sslv3,  "Does not support SSLv3" );
-ok( $prop->supports_sslv2,   "Supports SSLv2" );
-
-ok( !$prop->supports_any_bc_a,      "Does not support at least any Bettercrypto A cipher suite" );
-ok( !$prop->supports_any_bc_b,      "Does not support at least any Bettercrypto B cipher suite" );
-ok( !$prop->supports_any_bsi_pfs,   "Does not support at least any BSI pfs cipher suite with PFS" );
-ok( !$prop->supports_any_bsi_nopfs, "Does not support at least any BSI (no) pfs cipher suite" );
-
-ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
-ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
-ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
-ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
-
-TODO:
+SKIP:
    {
-   local $TODO = "Changed score calculation ...";
-   is( $prop->score, 0, "Score for this server" );
-   }
+   skip "Can't start OpenSSL with -ssl2", 15
+      unless $server;
+
+   lives_ok( sub { $prop->get_properties; }, "Run get all properties" ) or diag "with Server $openssl";
+
+   ok( !$prop->supports_tlsv12, "Does not support TLS 1.2" );
+   ok( !$prop->supports_tlsv11, "Does not support TLS 1.1" );
+   ok( !$prop->supports_tlsv1,  "Does not support TLS 1.0" );
+   ok( !$prop->supports_sslv3,  "Does not support SSLv3" );
+   ok( $prop->supports_sslv2,   "Supports SSLv2" );
+
+   ok( !$prop->supports_any_bc_a,      "Does not support at least any Bettercrypto A cipher suite" );
+   ok( !$prop->supports_any_bc_b,      "Does not support at least any Bettercrypto B cipher suite" );
+   ok( !$prop->supports_any_bsi_pfs,   "Does not support at least any BSI pfs cipher suite with PFS" );
+   ok( !$prop->supports_any_bsi_nopfs, "Does not support at least any BSI (no) pfs cipher suite" );
+
+   ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
+   ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
+   ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
+   ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
+
+   TODO:
+      {
+      local $TODO = "Changed score calculation ...";
+      is( $prop->score, 0, "Score for this server" );
+      }
 
 
-stop_openssl($server);
+   stop_openssl($server);
 
-
+   } ## end SKIP:
 
 #
-# Check wrong "is BSI" filter
+# Check for the wrong "is BSI" filter (fixed bug)
 #
 
-
-=begin weg
-
- perl bin/check_ciphers_one_domain.pl 88.79.152.76
-Summary for 88.79.152.76
-Supported Cipher Suites at Host 88.79.152.76: 
-  * RSA_WITH_AES_128_GCM_SHA256
-  * RSA_WITH_AES_128_CBC_SHA
-  * RSA_WITH_AES_256_CBC_SHA
-  * ECDHE_RSA_WITH_AES_128_GCM_SHA256
-  * ECDHE_RSA_WITH_AES_256_CBC_SHA
-  * ECDHE_RSA_WITH_AES_128_CBC_SHA
-  * RSA_WITH_RC4_128_SHA
-  * RSA_WITH_RC4_128_MD5
-  * RSA_WITH_3DES_EDE_CBC_SHA
-Supports SSLv3
-Supports TLSv1
-Supports TLSv1.1
-Supports TLSv1.2
-Supports at least one Bettercrypto B Cipher Suite
-Supports at least one BSI TR-02102-2 Cipher Suite with PFS
-Supports at least one BSI TR-02102-2 Cipher Suite without PFS
-Supports only Bettercrypto B Cipher Suites
-Supports only BSI TR-02102-2 Cipher Suites with PFS
-Supports only BSI TR-02102-2 Cipher Suites without PFS
-Supports weak Cipher Suites
-Supports ancient SSL Versions 2.0 or 3.0
-Cipher Suite used by Firefox:        RSA_WITH_AES_128_CBC_SHA
-Cipher Suite used by Safari:         RSA_WITH_AES_128_CBC_SHA
-Cipher Suite used by Chrome:         RSA_WITH_AES_128_GCM_SHA256
-Cipher Suite used by Win 7 (IE 8):   RSA_WITH_AES_128_CBC_SHA
-Cipher Suite used by Win 10 (IE 11): RSA_WITH_AES_128_GCM_SHA256
-Overall Score for this Host: 0
-
-=end weg
-
-=cut
 
 my @ciphers = qw(
    AES128-GCM-SHA256
@@ -899,45 +901,52 @@ my @ciphers = qw(
 
 my $ciphers = join( ":", @ciphers );
 
-$server = start_openssl("-HTTP -accept $server_port -no_ssl2 -cipher '$ciphers'");
+$server = start_openssl("-www -accept $server_port -no_ssl2 -cipher '$ciphers'");
 
 
 
 undef $prop;
 lives_ok( sub { $prop = Net::SSL::GetServerProperties->new( host => "localhost", port => $server_port, ); },
           "New get Server Properties ..." );
-lives_ok( sub { $prop->get_properties; }, "Run get all properties" ) or diag "failed with Server $openssl";
 
-
-ok( $prop->supports_tlsv12, "Supports TLS 1.2" );
-ok( $prop->supports_tlsv11, "Supports TLS 1.1" );
-ok( $prop->supports_tlsv1,  "Supports TLS 1.0" );
-ok( $prop->supports_sslv3,  "Supports SSLv3" );
-ok( !$prop->supports_sslv2, "Does not support SSLv2" );
-
-ok( !$prop->supports_any_bc_a,     "Does not support at least one Bettercrypto A cipher suite" );
-ok( $prop->supports_any_bc_b,      "Supports at least one Bettercrypto B cipher suite" );
-ok( $prop->supports_any_bsi_pfs,   "Supports at least one  BSI pfs cipher suite with PFS" );
-ok( $prop->supports_any_bsi_nopfs, "Supports at least one BSI (no) pfs cipher suite" );
-
-ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
-ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
-ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
-ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
-
-ok( $prop->supports_weak,               "Supports weak cipher suites" );
-ok( !$prop->supports_only_bsi_versions, "Does not support only BSI allowed versions" );
-
-
-TODO:
+SKIP:
    {
-   local $TODO = "Changed score calculation ...";
-   is( $prop->score, 0, "Score for this server" );
-   }
-
-stop_openssl($server);
+   skip "Can't start OpenSSL with -no_ssl2 -cipher '$ciphers'", 17
+      unless $server;
 
 
+   lives_ok( sub { $prop->get_properties; }, "Run get all properties" ) or diag "failed with Server $openssl";
+
+
+   ok( $prop->supports_tlsv12, "Supports TLS 1.2" );
+   ok( $prop->supports_tlsv11, "Supports TLS 1.1" );
+   ok( $prop->supports_tlsv1,  "Supports TLS 1.0" );
+   ok( $prop->supports_sslv3,  "Supports SSLv3" );
+   ok( !$prop->supports_sslv2, "Does not support SSLv2" );
+
+   ok( !$prop->supports_any_bc_a,     "Does not support at least one Bettercrypto A cipher suite" );
+   ok( $prop->supports_any_bc_b,      "Supports at least one Bettercrypto B cipher suite" );
+   ok( $prop->supports_any_bsi_pfs,   "Supports at least one  BSI pfs cipher suite with PFS" );
+   ok( $prop->supports_any_bsi_nopfs, "Supports at least one BSI (no) pfs cipher suite" );
+
+   ok( !$prop->supports_only_bc_a,      "Does not support only Bettercrypto A cipher suites" );
+   ok( !$prop->supports_only_bc_b,      "Does not support only Bettercrypto B cipher suites" );
+   ok( !$prop->supports_only_bsi_pfs,   "Does not support only BSI pfs cipher suites with PFS" );
+   ok( !$prop->supports_only_bsi_nopfs, "Does not support only BSI (no) pfs cipher suites" );
+
+   ok( $prop->supports_weak,               "Supports weak cipher suites" );
+   ok( !$prop->supports_only_bsi_versions, "Does not support only BSI allowed versions" );
+
+
+   TODO:
+      {
+      local $TODO = "Changed score calculation ...";
+      is( $prop->score, 0, "Score for this server" );
+      }
+
+   stop_openssl($server);
+
+   } ## end SKIP:
 
 done_testing();
 
