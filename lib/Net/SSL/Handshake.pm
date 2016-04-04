@@ -409,11 +409,12 @@ sub _build_socket
    return $socket;
    }
 
-sub _to_hex
-   {
-   return join( " ", map { sprintf "%02X", $ARG } unpack( "C*", shift ) );
-   }
-
+# for some Debug
+#sub _to_hex
+#   {
+#   return join( " ", map { sprintf "%02X", $ARG } unpack( "C*", shift ) );
+#   }
+#
 
 =head2 send_record
 
