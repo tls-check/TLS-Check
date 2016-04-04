@@ -18,7 +18,7 @@ my $builder = Module::Build->new(
                        'Test::MockObject'     => 1.20140408,
                        'Test::LWP::UserAgent' => 0.025,
                        'Test::File'           => 1.41,
-                       'forks'                => 0.36,
+                       'IPC::Run'             => 0.90,
                      },
 
    share_dir => {

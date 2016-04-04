@@ -9,17 +9,7 @@ use Test::Deep;
 use Test::Differences;
 use English qw( -no_match_vars );
 use IO::Socket::INET;
-
-# When running in FreeBSD Jails, there is no real lo0; 127.0.0.1 responds with the jail's IP
-# but forks has an IP filter and by default only allows 127.0.0.1
-# Because of this, get the local IP ...
-BEGIN
-{
-   my $local_ip = IO::Socket::INET->new( Proto => 'udp', LocalAddr => '127.0.0.1' )->sockhost;
-   $ENV{THREADS_IP_MASK} = "^$local_ip\$" if $local_ip ne '127.0.0.1';
-}
-
-use forks;
+use IPC::Run qw(start);
 
 use Data::Dumper;
 
@@ -60,8 +50,6 @@ throws_ok(
    "New Net::SSL::Handshake without listening server"
          );
 
-
-use IPC::Run qw(start);
 
 sub start_openssl
    {
