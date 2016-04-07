@@ -82,7 +82,7 @@ sub run_check
 
    my @mx = $self->other_check("Security::TLSCheck::Checks::DNS")->all_mx;
 
-   foreach my $mx ( @mx )
+   foreach my $mx (@mx)
       {
       TRACE "Check MX $mx";
       next if $self->mx_is_checked($mx);
@@ -92,17 +92,18 @@ sub run_check
       my $smtp = Net::SMTP->new( Hello => $self->my_hostname, Host => $mx );
       if ($smtp)
          {
-         TRACE "SMTP-Connect to MX $mx OK, SMTP-Banner: "  . $smtp->banner;
-         $self->add_mx_active($mx); 
+         TRACE "SMTP-Connect to MX $mx OK, SMTP-Banner: " . $smtp->banner;
+         $self->add_mx_active($mx);
          eval {
 
             if ( defined $smtp->supports("STARTTLS") )
                {
                TRACE "MX $mx supports STARTTLS";
                $self->add_mx_supports_starttls($mx);
+
                # $self->add_mx_for_cipher($mx);
 
-#               if ( $smtp->starttls(SSL_verifycn_scheme => 'http', ) )
+               #               if ( $smtp->starttls(SSL_verifycn_scheme => 'http', ) )
                if ( $smtp->starttls )
                   {
                   TRACE "MX $mx works with STARTTLS";
@@ -129,7 +130,7 @@ sub run_check
          DEBUG "SMTP-Connect to MX $mx failed: $EVAL_ERROR";    # Net::SMTP sets EVAL_ERROR!
          }
 
-      } ## end foreach my $mx ( $self->get_mx...)
+      } ## end foreach my $mx (@mx)
 
    return $self->result;
    } ## end sub run_check

@@ -100,7 +100,7 @@ sub BUILD
 
    for my $pos ( 0 .. $#{$key_figures} )
       {
-      $key_figures->[$pos]{pos}   = $pos;
+      $key_figures->[$pos]{pos} = $pos;
       }
 
    return $self;

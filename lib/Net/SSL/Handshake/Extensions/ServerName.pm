@@ -47,7 +47,7 @@ sub BUILD
    my $idn_host = domain_to_ascii( $self->hostname );
 
    my $length = length($idn_host);
-   $self->add( "n C n a*", $length+3, 0, $length, $idn_host);
+   $self->add( "n C n a*", $length + 1 + 2, 0, $length, $idn_host );
 
    return;
    }

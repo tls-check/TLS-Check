@@ -57,7 +57,7 @@ As the name says, this method calculates the final web score.
 
  Score wie bisher, zusätzlich:
  DONE! Wenn keine Verschlüsselung: Fix auf 0
- Wenn Heartbleed: fix auf 0
+ Wenn Heartbleed: fix auf -10
  Wenn kein valides Zertifikat (z.B. selbstsigniert): -10
  Wenn Domain nicht zum Zertifikat passt: -20
  Wenn Strict-Transport-Security: +5 // +10!
@@ -75,6 +75,10 @@ As the name says, this method calculates the final web score.
 
 sub final_web_score
    {
+   ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
+   # TODO:
+   # use constants for +/- score!
+
    my $self = shift;
 
    my $web        = $self->other_check("Security::TLSCheck::Checks::Web");
@@ -95,7 +99,7 @@ sub final_web_score
    $score -= 10 if $web->redirects_to_http;
 
    $score += 3 if $dns->count_ipv6 or $dns->count_ipv6_www;
-   
+
    # Not allowed for privacy reasons!
    # TRACE "INTERNALDEBUG: Final Web Score for ${ \$self->domain }: $score";
 

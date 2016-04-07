@@ -127,11 +127,10 @@ sub mx_is_checked
       }
 
    DEBUG "MX $mx is not yet checked.";
-   io("$TEMPDIR/$mx")->print("Checked $mx at " . localtime);
+   io("$TEMPDIR/$mx")->print( "Checked $mx at " . localtime );
 
    return 0;
    } ## end sub mx_is_checked
 
 
 1;
-

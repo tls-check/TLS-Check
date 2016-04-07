@@ -273,5 +273,6 @@ sub has_ipv6_roundrobin
    }
 
 __PACKAGE__->meta->make_immutable;
+
 1;
 

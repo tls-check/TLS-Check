@@ -9,6 +9,9 @@ use Net::Cmd;                                      # need constants
 use Net::SMTP;
 
 use English qw( -no_match_vars );
+use Time::HiRes qw(sleep);
+use Fatal qw(sleep);
+use Readonly;
 
 use 5.010;
 
@@ -75,7 +78,7 @@ retry number. Default: 65 seconds (which means, that the 2nd retry waits 130 sec
 
 
 has '+port'       => ( default => 25, );
-has max_retries   => ( is      => "ro", isa => "Int", default => 0, );
+has max_retries   => ( is      => "ro", isa => "Int", default => 2, );
 has throttle_time => ( is      => "ro", isa => "Int", default => 65, );
 has my_hostname   => ( is      => "ro", isa => "Str", default => "tls-check.localhost", );
 
@@ -86,6 +89,9 @@ after close_notify => sub {
    $self->socket->quit;
    return;
 };
+
+Readonly my $SMTP_ERROR_MAX_CONNECTIONS => 421;
+Readonly my $SMTP_ERROR_UNAVAILABLE     => 450;
 
 
 sub _build_socket
@@ -107,7 +113,7 @@ sub _build_socket
       unless ($smtp)
          {
 
-         if ( $@ =~ m{: \s* 4(?:21|50) }x )
+         if ( $EVAL_ERROR =~ m{: \s* 4(?:21|50) }x )
             {
             # no, can't quit on not defined obj ... $smtp->quit;
             $state = "SMTP Connection";
@@ -115,7 +121,8 @@ sub _build_socket
             }
          else
             {
-            die "Can't connect to SMTP Server $mx: $@";
+            # TODO: timeouts with some servers!
+            die "Can't connect to SMTP Server $mx: $EVAL_ERROR\n";
             }
          }
 
@@ -130,7 +137,8 @@ sub _build_socket
       # Step 3: do STARTTLS; when error code 421/450: wait and retry
       unless ( $smtp->command("STARTTLS")->response() == CMD_OK )
          {
-         if ( $smtp->code == 421 or $smtp->code == 450 )
+
+         if ( $smtp->code == $SMTP_ERROR_MAX_CONNECTIONS or $smtp->code == $SMTP_ERROR_UNAVAILABLE )
             {
             $smtp->quit;
             $state = "SMTP STARTTLS";
@@ -149,8 +157,8 @@ sub _build_socket
 
 
    # die "NIX DA im smtp" unless defined $smtp;
-      
-   binmode($smtp);
+
+   binmode($smtp) or warn "binmode on SMTP failed: $OS_ERROR\n";
 
    return $smtp;
    } ## end sub _build_socket
@@ -161,7 +169,7 @@ sub _wait
    my $retry   = shift // 1;
    my $message = shift // __PACKAGE__;
 
-   warn "$message: Wait for retry, $retry: " . $self->throttle_time . " Seconds";
+   # DEBUG "$message: Wait for retry, $retry: " . $self->throttle_time . " Seconds";
 
    sleep $retry * $self->throttle_time;
    return $self;
@@ -173,20 +181,21 @@ We have to override send and recv, because we use Net::SMTP instead ob IO::Socke
 
 =cut
 
-sub send
+sub send                                           ## no critic (Subroutines::ProhibitBuiltinHomonyms)
    {
    my $self = shift;
-   my $data   = shift;
+   my $data = shift;
 
    return $self->socket->rawdatasend($data);
    }
 
-sub recv
+sub recv                                           ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+
    {
-   my $self   = shift;
-   
-   my $ret = $self->socket->recv($ARG[0], $ARG[1], $ARG[2]);
-   
+   my $self = shift;
+
+   my $ret = $self->socket->recv( $ARG[0], $ARG[1], $ARG[2] );
+
    return $ret;
    }
 

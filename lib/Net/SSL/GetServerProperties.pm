@@ -1,5 +1,9 @@
 package Net::SSL::GetServerProperties;
 
+#
+# we have to handle a lot with scores, so don't enable number check
+#
+## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
 
 use Moose;
 use 5.010;
@@ -14,6 +18,7 @@ use Log::Log4perl::EasyCatch;
 use List::Util qw(any all max min);
 use Carp qw(croak);
 use Time::HiRes qw(sleep);
+use Fatal qw(sleep);
 
 use Readonly;
 
@@ -167,8 +172,17 @@ runs all tests, gets all properties.
 my $CHECK_PFS    = qr{ (?: (?:EC)? DHE | EDH ) }x;
 my $CHECK_EC_KEY = qr{ ECDSA }x;
 
+Readonly my $SCORE_OSAFT_FULL      => 100;
+Readonly my $SCORE_OSAFT_GOOD      => 80;
+Readonly my $SCORE_OSAFT_LOWMEDIUM => 40;
+Readonly my $SCORE_OSAFT_LOW       => 20;
+Readonly my $SCORE_OSAFT_VERYLOW   => 10;
+Readonly my $SCORE_OSAFT_BAD       => 0;
 
-sub get_properties
+
+# TODO: Complexity, split into smaller subs
+
+sub get_properties                                 ## no critic (Subroutines::ProhibitExcessComplexity)
    {
    my $self = shift;
 
@@ -188,7 +202,7 @@ sub get_properties
    } or DEBUG "TLSv12 check for ${ \$self->host }:${ \$self->port } : Error: $EVAL_ERROR";
 
    # Not listening? Finish! -- Reminder: ONLY ABORT WITH THIS ERROR!
-   return $self if $EVAL_ERROR =~ m{Can't connect};
+   return $self if $EVAL_ERROR && index( $EVAL_ERROR, "Can't connect" ) >= 0;
 
    eval {
       if   ( $self->check_all_ciphers($TLSv11) ) { $self->supports_tlsv11(1); }
@@ -256,7 +270,7 @@ sub get_properties
    # TODO: ALL Export should be already in the weak ones!
    # TODO: write a grep sub in Ciphersuites Module
 
-   my @very_weak_ciphers = grep { $ARG->{name} =~ m{EXPORT|NULL} } @{ $self->accepted_ciphers->ciphers };
+   my @very_weak_ciphers = grep { $ARG->{name} =~ m{EXPORT|NULL}x } @{ $self->accepted_ciphers->ciphers };
 
    # TODO!
    # "weak_ciphers" include o-saft score 11;
@@ -266,16 +280,17 @@ sub get_properties
    # TODO: re-check if this rating is still OK
    # => see https://blog.qualys.com/ssllabs/2013/09/10/is-beast-still-a-threat
    # => maybe change this cipher suites from weak to medium
-   
+
    my @weak_ciphers = grep {
-      $ARG->{name} !~ m{EXPORT|NULL}
+      $ARG->{name} !~ m{EXPORT|NULL}x
          and (    ( ( $ARG->{scores}{osaft_openssl} // "" ) =~ m{^ (?: weak | low )}ix )
-               or ( ( $ARG->{scores}{osaft} // 100 ) < 40 ) )
+               or ( ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) < $SCORE_OSAFT_LOWMEDIUM ) )
    } @{ $self->accepted_ciphers->ciphers };
 
    my @medium_ciphers = grep {
-            ( ( $ARG->{scores}{osaft_openssl} // "" ) =~ m{^medium}ix )
-         or ( ( $ARG->{scores}{osaft} // 100 ) < 80 and ( $ARG->{scores}{osaft} // 100 ) >= 40 )
+      ( ( $ARG->{scores}{osaft_openssl} // "" ) =~ m{^medium}ix )
+         or (     ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) < $SCORE_OSAFT_GOOD
+              and ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) >= $SCORE_OSAFT_LOWMEDIUM )
    } @{ $self->accepted_ciphers->ciphers };
 
 
@@ -481,7 +496,14 @@ Absolut gefährdet,
 
 =cut
 
-sub _calculate_score
+
+#use constant SCORE_FULL       => 100;
+#use constant SCORE_GOOD       => 80;
+#use constant SCORE_HIGHMEDIUM => 60;
+#use constant SCORE_MEDIUM     => 50;
+#use constant SCORE_LOWMEDIUM  => 40;
+
+sub _calculate_score                               ## no critic (Subroutines::ProhibitExcessComplexity)
    {
    my $self = shift;
 
@@ -573,7 +595,7 @@ sub _calculate_score
 
 
    # reduce score, if old protocols are supported
-   if    ( $self->supports_sslv2 )  { $version_negative_score = 100; }
+   if    ( $self->supports_sslv2 )  { $version_negative_score = 100; }   ## no critic (ControlStructures::ProhibitCascadingIfElse)
    elsif ( $self->supports_sslv3 )  { $version_negative_score = 35; }
    elsif ( $self->supports_tlsv1 )  { $version_negative_score = 15; }
    elsif ( $self->supports_tlsv11 ) { $version_negative_score = 5; }
@@ -599,11 +621,11 @@ sub _calculate_score
       . $self->host
       . "?!? Cipher-Score: $cipher_score; Ciphers: "
       . $self->accepted_ciphers->names
-      if (     !$self->supports_sslv2
-           and !$self->supports_sslv3
-           and !$self->supports_tlsv1
-           and !$self->supports_tlsv11
-           and !$self->supports_tlsv12 );
+      if (     not $self->supports_sslv2
+           and not $self->supports_sslv3
+           and not $self->supports_tlsv1
+           and not $self->supports_tlsv11
+           and not $self->supports_tlsv12 );
 
    # WARN "Version-Neg-Score is 5 for " . $self->host if $version_negative_score == 5;
 
@@ -655,7 +677,7 @@ sub supports_medium
 sub supports_no_weakmedium
    {
    my $self = shift;
-   return 1 if !$self->supports_very_weak and !$self->supports_weak and !$self->supports_medium;
+   return 1 if not $self->supports_very_weak and not $self->supports_weak and not $self->supports_medium;
    return 0;
    }
 
@@ -919,21 +941,21 @@ TODO: Tests!
 sub supports_sslv3_or_newer
    {
    my $self = shift;
-   return 1 if $self->supports_sslv3 and !$self->supports_sslv2;
+   return 1 if $self->supports_sslv3 and not $self->supports_sslv2;
    return 0;
    }
 
 sub supports_tlsv1_or_newer
    {
    my $self = shift;
-   return 1 if $self->supports_tlsv1 and !$self->supports_sslv3 and !$self->supports_sslv2;
+   return 1 if $self->supports_tlsv1 and not $self->supports_sslv3 and not $self->supports_sslv2;
    return 0;
    }
 
 sub supports_tlsv11_or_newer
    {
    my $self = shift;
-   return 1 if $self->supports_tlsv11 and !$self->supports_tlsv1 and !$self->supports_sslv3 and !$self->supports_sslv2;
+   return 1 if $self->supports_tlsv11 and not $self->supports_tlsv1 and not $self->supports_sslv3 and not $self->supports_sslv2;
    return 0;
    }
 
@@ -942,10 +964,10 @@ sub supports_tlsv12_or_newer
    my $self = shift;
    return 1
       if $self->supports_tlsv12
-      and !$self->supports_tlsv11
-      and !$self->supports_tlsv1
-      and !$self->supports_sslv3
-      and !$self->supports_sslv2;
+      and not $self->supports_tlsv11
+      and not $self->supports_tlsv1
+      and not $self->supports_sslv3
+      and not $self->supports_sslv2;
    return 0;
    }
 
@@ -961,21 +983,21 @@ TODO: Tests!
 sub supports_tlsv11_or_older
    {
    my $self = shift;
-   return 1 if $self->supports_tlsv11 and !$self->supports_tlsv12;
+   return 1 if $self->supports_tlsv11 and not $self->supports_tlsv12;
    return 0;
    }
 
 sub supports_tlsv1_or_older
    {
    my $self = shift;
-   return 1 if $self->supports_tlsv1 and !$self->supports_tlsv11 and !$self->supports_tlsv12;
+   return 1 if $self->supports_tlsv1 and not $self->supports_tlsv11 and not $self->supports_tlsv12;
    return 0;
    }
 
 sub supports_sslv3_or_older
    {
    my $self = shift;
-   return 1 if $self->supports_sslv3 and !$self->supports_tlsv1 and !$self->supports_tlsv11 and !$self->supports_tlsv12;
+   return 1 if $self->supports_sslv3 and not $self->supports_tlsv1 and not $self->supports_tlsv11 and not $self->supports_tlsv12;
    return 0;
    }
 
@@ -984,12 +1006,11 @@ sub supports_only_sslv2
    my $self = shift;
    return 1
       if $self->supports_sslv2
-      and !$self->supports_sslv3
-      and !$self->supports_tlsv1
-      and !$self->supports_tlsv11
-      and !$self->supports_tlsv12;
+      and not $self->supports_sslv3
+      and not $self->supports_tlsv1
+      and not $self->supports_tlsv11
+      and not $self->supports_tlsv12;
    return 0;
    }
-
 
 1;
