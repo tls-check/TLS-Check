@@ -1,6 +1,6 @@
 [InputOutput::RequireCheckedSyscalls]
 functions = :builtins
-exclude_functions = print
+exclude_functions = print say
 
 
 [Subroutines::ProhibitUnusedPrivateSubroutines]
@@ -16,4 +16,13 @@ strict = 0
 
 [BuiltinFunctions::ProhibitComplexMappings]
 max_statements = 2
+
+# 100 (for 100 percent etc) is allowed too; 0, 1, 2 are the defaults
+[ValuesAndExpressions::ProhibitMagicNumbers]
+allowed_values = 0 1 2 100
+
+# Allow SSLv3/TLSv12 etc.
+[NamingConventions::Capitalization]
+# constant_exemptions = v\d+
+constant_exemptions = .*(SSLv|TLSv).*
 

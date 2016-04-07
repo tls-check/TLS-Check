@@ -69,14 +69,16 @@ use File::ShareDir;
 
 our $CONFIG_FILE;
 our $LOG_CONFIG_FILE;
+
 # our $LOG_DIR;
 my $should_die_later;
 
 BEGIN
 {
-  #  $LOG_DIR         = File::HomeDir->my_dist_data( 'TLS-Check', { create => 1 } ) // "$Bin/../logs";
+   #  $LOG_DIR         = File::HomeDir->my_dist_data( 'TLS-Check', { create => 1 } ) // "$Bin/../logs";
    $CONFIG_FILE     = _get_configfile("tls-check.conf");
-   $LOG_CONFIG_FILE = $ENV{LOG_CONFIG} = _get_configfile("tls-check-logging.properties");
+   $LOG_CONFIG_FILE = _get_configfile("tls-check-logging.properties");
+   $ENV{LOG_CONFIG} = $LOG_CONFIG_FILE;            ## no critic (Variables::RequireLocalizedPunctuationVars)
 
    sub _get_configfile
       {
@@ -100,23 +102,23 @@ BEGIN
 
       # and othervise look in applications share dir
       my $CONFDIR = eval { return File::ShareDir::module_dir(__PACKAGE__) } // "conf";
+
       # warn "Share-Dir-Eval-Error: $EVAL_ERROR" if $EVAL_ERROR;
       $file = "$CONFDIR/$name";
       return $file if -f $file;
 
-      $should_die_later = "UUUPS, FATAL: configfile $name not found. Last try was <$file>.\n";
+      $should_die_later = "UUUPS, FATAL: configfile $name not found. Last try was <$file>.";
       return;
-      
+
       } ## end sub _get_configfile
 
 } ## end BEGIN
 
-die $should_die_later if !$COMPILING and $should_die_later;
+die "$should_die_later\n" if not $COMPILING and $should_die_later;
 
 
 
 use Log::Log4perl::EasyCatch;
-
 
 
 
@@ -142,7 +144,7 @@ has results => (
               },
    clearer => "clear_cached_results",
 
-);
+               );
 
 
 # has cached_mx => ( is => "rw", isa => "ArrayRef[Str]", auto_deref => 1, );
@@ -198,7 +200,7 @@ sub run_all_checks
       } ## end foreach my $check_name ( $self...)
 
    $self->clear_cached_results;
-   
+
    return wantarray ? @checks : \@checks;
    } ## end sub run_all_checks
 

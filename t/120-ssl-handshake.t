@@ -324,7 +324,8 @@ SKIP:
    TODO:
       {
       # TODO: check wich is the right/wrong result
-      local $TODO = "Looks like this is dependant von OpenSSL version; check it!";
+      # with some openSSL it is OK, with others not ...
+      local $TODO = "Looks like this is dependant of OpenSSL version; check it!";
       ok( $handshake->accepted_ciphers->count, "Cipher accepted" );
       }
    is( $handshake->server_version, $SSLv3, "Server is SSLv3 server" );

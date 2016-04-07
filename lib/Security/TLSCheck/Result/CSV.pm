@@ -61,6 +61,7 @@ Result:
 
 sub output
    {
+   ## no critic (BuiltinFunctions::ProhibitReverseSortBlock)
    my $self = shift;
 
    INFO "Output: CSV. File: " . $self->outfile;
@@ -117,7 +118,7 @@ sub output
                            ( map { $result->{$ARG} } qw(name description type count sum) ),
                            defined $result->{sum} ? $result->{sum} / $result->{count} : undef,
                            defined( $result->{sum} and $result->{type} eq "flag" )
-                           ? ( ( $result->{sum} / $result->{count} ) * 100 ) . "%"
+                           ? ( ( $result->{sum} / $result->{count} ) * 100 ) . q{%}
                            : undef,
                            $result->{values} ? median( $result->{values} ) : undef,
                            $group,

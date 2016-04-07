@@ -1366,14 +1366,14 @@ sub split_into_parts
    my $max_ciphers = int( $max_bytes / ( $ssl_version < $SSL3 ? $CODE_V2_LEN : $CODE_LEN ) );
 
    my @ciphers = $self->all;
-   
+
    my @splitted;
    while (@ciphers)
       {
-      my @part = splice( @ciphers, 0, $max_ciphers);
+      my @part = splice( @ciphers, 0, $max_ciphers );
       push @splitted, __PACKAGE__->new( ciphers => \@part );
       }
-   
+
    return @splitted;
    }
 

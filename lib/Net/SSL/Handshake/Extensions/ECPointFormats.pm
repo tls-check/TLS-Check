@@ -41,7 +41,7 @@ has "+type" => ( default => 0x000b );
 # at the moment hardcoded!
 # TODO: make this as option (via atrribute)!
 
-my @ec_point_formats = (0, 1, 2);
+my @ec_point_formats = ( 0, 1, 2 );
 
 sub BUILD
 

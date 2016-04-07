@@ -139,12 +139,11 @@ sub _agg_set
    my $agg = shift;
    my $value = shift // "<undef>";
 
-   $agg->{group}{$ARG}++ foreach split(/:/, $value);
+   $agg->{group}{$ARG}++ foreach split( /:/, $value );
    $agg->{count}++;
 
    return;
    }
-
 
 
 
@@ -154,13 +153,13 @@ sub aggregate
    my $category = shift;
 
    my %result;
-   
+
    foreach my $check ( @{ $self->result_for_category($category) } )
       {
 
       my $class = $check->{check}{class};
 
-      # no, this is TOO noisy! 
+      # no, this is TOO noisy!
       # TRACE "Aggregate check $check->{name} in class $class";
 
       # check exists in result?

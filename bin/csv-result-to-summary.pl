@@ -7,8 +7,12 @@
 
 use strict;
 use warnings;
+use autodie;
 
 use utf8;
+
+use Carp qw(croak);
+use English qw( -no_match_vars );
 
 use Text::CSV_XS;
 
@@ -36,8 +40,8 @@ Readonly my $HACKY_CONF__NO_CATEGORIES => 0;       # 1;
 
 
 
-binmode STDIN,  ":utf8";
-binmode STDOUT, ":utf8";
+binmode STDIN,  ":encoding(UTF-8)";
+binmode STDOUT, ":encoding(UTF-8)";
 
 my %result;
 
@@ -45,17 +49,17 @@ my @categories;
 
 init();
 
-my $csv = Text::CSV_XS->new( { binary => 1, sep_char => ";", } );
+my $out_csv = Text::CSV_XS->new( { binary => 1, sep_char => q{;}, } );
 
 if ($HACKY_CONF__NO_CATEGORIES)
    {
-   $csv->combine( "Name des Tests", "Wert", "Prozent" ) or die "CSV error at headline";
+   $out_csv->combine( "Name des Tests", "Wert", "Prozent" ) or croak "CSV error at headline";
    }
 else
    {
-   $csv->combine( "Name des Tests", @categories ) or die "CSV error at headline";
+   $out_csv->combine( "Name des Tests", @categories ) or croak "CSV error at headline";
    }
-say $csv->string;
+say $out_csv->string;
 
 #<<<
 
@@ -134,7 +138,7 @@ summarize( "Durchschnittlicher Score der Verschlüsselung unterstützenden Mails
 sub summarize_cipher
    {
    my $class = shift;
-   my @rest  = @_;
+   my @rest  = @ARG;
 
    #<<<
    summarize( "… mit Unterstützung für extrem unsicheres Protokoll SSL 2.0",                        $class => "Supports SSLv2", @rest );
@@ -160,6 +164,7 @@ sub summarize_cipher
 
    #>>>
 
+   return;
    } ## end sub summarize_cipher
 
 
@@ -167,7 +172,7 @@ sub summarize_cipher
 sub init
    {
 
-   my $csv = Text::CSV_XS->new( { binary => 1, sep_char => ";" } );
+   my $in_csv = Text::CSV_XS->new( { binary => 1, sep_char => q{;} } );
 
    my $cat    = "";
    my $module = "";
@@ -178,8 +183,8 @@ sub init
    my $catpos = 0;
    while (<>)
       {
-      $csv->parse($_);
-      my @fields = $csv->fields();
+      $in_csv->parse($_);
+      my @fields = $in_csv->fields();
 
       if ( $fields[$COL_CATEGORY] )
          {
@@ -199,17 +204,16 @@ sub init
       $fields[$COL_CHECK_NAME] =~ s{Suppports}{Supports};
       $result{ lc("$module/$fields[$COL_CHECK_NAME]") }[$catpos] = \@fields;
 
-
       } ## end while (<>)
 
+   return;
    } ## end sub init
 
 
 sub head
    {
-   my @fields = @_;
-   $csv->combine(@fields) or die "CSV error on Head Combine!";
-   say $csv->string;
+   $out_csv->combine(@ARG) or croak "CSV error on Head Combine!";
+   say $out_csv->string;
    return;
    }
 
@@ -219,7 +223,7 @@ sub summarize
    my $title      = shift;
    my $module     = shift;
    my $check_name = shift;
-   my %extra      = ( col => $COL_RESULT_SUM, percentcol => $COL_RESULT_ALL, percent => "$module/$check_name", @_ );
+   my %extra      = ( col => $COL_RESULT_SUM, percentcol => $COL_RESULT_ALL, percent => "$module/$check_name", @ARG );
 
    # loop cat
 
@@ -233,34 +237,34 @@ sub summarize
       {
       my $value = $result{ lc("$module/$check_name") }[$pos][ $extra{col} ];
 
-      $value = sprintf( "%.3f", $value ) if $value =~ m{\.};
+      $value = sprintf( "%.3f", $value ) if $value =~ m{[.]};
 
       # Wenn Prozent da sein sollen
-      if ( !$HACKY_CONF__NO_CATEGORIES and defined $extra{percent} )
+      if ( not $HACKY_CONF__NO_CATEGORIES and defined $extra{percent} )
          {
-         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // die "Ups, da fehlt Prozent-Basis!";
+         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // croak "Ups, da fehlt Prozent-Basis!";
          $value = sprintf( "$value (%.3f%%)", ( $value / $percent_base ) * 100 );
-         $value =~ s{100\.000%}{100%};
+         $value =~ s{100[.]000%}{100%}x;
          }
 
-      $value =~ s{\.}{,}g;                         #
+      $value =~ s{[.]}{,}g;                        #
       push @fields, $value;
 
       if ( $HACKY_CONF__NO_CATEGORIES and defined $extra{percent} )
          {
-         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // die "Ups, da fehlt Prozent-Basis!";
+         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // croak "Ups, da fehlt Prozent-Basis!";
          my $percent_value = sprintf( "%.3f%%", ( $value / $percent_base ) * 100 );
-         $percent_value =~ s{100\.000%}{100%};
-         $percent_value =~ s{\.}{,}g;
+         $percent_value =~ s{100[.]000%}{100%}x;
+         $percent_value =~ s{[.]}{,}g;
          push @fields, $percent_value;
          }
 
       } ## end for my $pos ( 0 .. $last_col...)
 
 
-   $csv->combine(@fields) or die "CSV error: can't combine summary";
+   $out_csv->combine(@fields) or croak "CSV error: can't combine summary";
 
-   say $csv->string;
+   say $out_csv->string;
 
    return;
    } ## end sub summarize
@@ -269,13 +273,10 @@ sub summarize
 sub get_field
    {
    my $in_fields = shift;
-   my %params    = @_;
+   my %params    = @ARG;
 
    my $field = $in_fields->[ $params{col} ];
 
    return $field if exists $params{percent} and not defined $params{percent};
-
-
+   return;
    }
-
-

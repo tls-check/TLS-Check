@@ -435,7 +435,7 @@ sub cert_letsencrypt
    {
    my $self = shift;
    my $cert_issuer = $self->cert_issuer // return;
-   return index( $cert_issuer, "Let's Encrypt" ) > -1;
+   return index( $cert_issuer, "Let's Encrypt" ) >= 0;
    }
 
 
@@ -448,7 +448,7 @@ Checks, if the cert is selfsigned
 sub cert_selfsigned
    {
    my $self         = shift;
-   my $cert_issuer  = $self->_https_response->header("Client-SSL-Cert-Issuer")  // return;
+   my $cert_issuer  = $self->_https_response->header("Client-SSL-Cert-Issuer") // return;
    my $cert_subject = $self->_https_response->header("Client-SSL-Cert-Subject") // return;
    return $cert_subject eq $cert_issuer;
    }
@@ -495,7 +495,7 @@ sub _get_server_name
    my $server = shift // return;
 
    my ($name) = $server =~ m{ ^ ([^/]*) }x;
-   return $name if length($name) < 20;
+   return $name if length($name) < 20;             ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
 
    $name =~ s{ ( [^\w\s].* ) }{}xg;
 
@@ -541,6 +541,7 @@ sub has_hpkp
    {
    my $self = shift;
    return 1 if $self->_https_response_nocheck->header("Public-Key-Pins");
+   return 0;
    }
 
 
@@ -557,6 +558,7 @@ sub has_hpkp_report
    {
    my $self = shift;
    return 1 if $self->_https_response_nocheck->header("Public-Key-Pins-Report-Only");
+   return 0;
    }
 
 
