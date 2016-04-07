@@ -66,7 +66,7 @@ The most easy way to install TLS-Check is using FreeBSD and install it as port o
 
 ##### • LibIDN
 
-If you want to use IDN domain names (with charactes other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
+If you want to use IDN domain names (with characters other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
 
 ##### • Perl
 
