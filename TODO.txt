@@ -25,6 +25,9 @@
 
 
 * Rewrite parallel mode with fork pool and queue to speed up everything
+  * maybe use MCE for this, see:
+    https://github.com/marioroy/mce-perl
+    http://search.cpan.org/dist/MCE/lib/MCE.pod
 
 
 

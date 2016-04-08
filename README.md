@@ -66,7 +66,7 @@ The most easy way to install TLS-Check is using FreeBSD and install it as port o
 
 ##### • LibIDN
 
-If you want to use IDN domain names (with charactes other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
+If you want to use IDN domain names (with characters other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
 
 ##### • Perl
 
@@ -114,14 +114,14 @@ As alternative you can start everything without installing directly from `bin`, 
 
 ### Short summary
 
-    tls-check-parallel.pl --files=path/to/domain-file.txt --outfile=result/my-result.csv
-    csv-result-to-summary.pl result/my-result.csv > result/summary.csv
+    tls-check-parallel.pl --files=path/to/domain-file.txt --outfile=results/my-result.csv
+    csv-result-to-summary.pl results/my-result.csv > result/summary.csv
 
 You may also run it without parameter, then it gets input from STDIN and writes the result to STDOUT.
 
 csv-result-to-summary.pl is a hack to extract the most important results and create an easy to read CSV, which can be used with LibreOffice, Excel, Numbers, … But at the moment the descriptions of the summary are in german.
 
-You can also use the full result, but it's hard to read.
+You can also use the full result (which is also CSV), but it's harder to read.
 
 ### More detailed usage
 
@@ -129,6 +129,7 @@ After installation there are some new executables:
 
     tls-check.pl
     tls-check-parallel.pl
+    tls-check               (symlink to tls-check-parallel.pl)
   
 They are the same, but, tls-check-parallel can query domains in parallel.
 
@@ -172,7 +173,17 @@ The domain file is a CSV and has one or more colums: first column is a domain na
 
 It's OK to have no category, so the file simply contains one domain per line.
 
-If you have enough memory it's OK to set --jobs to a high value. But at the moment the parallel mode is not optimal.
+If you have enough memory it's OK to set --jobs to a high value (e.g. 50 when running all checks on a 4 core machine with 16 GB RAM or more when not running all checks). But at the moment the parallel mode is not optimal, because it spawns a new process for every domain.
+
+The result file is a CSV with a lot of detailed results. You can read it with Excel, LibreOffice, Numbers or any other spreadsheet program.
+
+You can use `csv-result-to-summary.pl` to get a summary of the result: 
+
+    csv-result-to-summary.pl results/my-result.csv > result/summary.csv
+
+This script uses standard unix input/output via one or more file or STDIN (for input) and prints the result to STDOUT, so you can redirect this everywhere.
+
+If you want your own summary, you may change `csv-result-to-summary.pl`. It's a little bit hacky, but works.
 
 
 ### Logfiles
@@ -191,10 +202,11 @@ It's sure, that there are bugs. Please report them, patches and fixes are welcom
 * Some tests are written for execution in my local development environment, should be rewritten
 * write more and better tests, e.g. with different SSL implementations
 * Single standalone program for getting SSL/TLS properties should be rewritten (Net::SSL::GetServerProperties module should provide list of all checks)
-* Split some modules into extra Distributions
+* Split some modules into extra Distributions (e.g. Net::SSL::xxx Modules)
 * publish everything on CPAN (after splitting in distributions)
 * There are some other TODOs … ;-)
 * MX handling works as expected, but should be rewritten, e.g. to better handle categories
+* Heartbleed check uses external executable; should be implemented as module.
 
 
 ## Mailing list and support
