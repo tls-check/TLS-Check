@@ -57,21 +57,9 @@ my $BASE_VERSION = "0.8"; use version; our $VERSION = qv( sprintf "$BASE_VERSION
    # because by selecting via name/tag/.... there may be duplicates!
    # even with only one Tag there MAY be duplicates
    $ciphers->unique;
-   
-   # 
-   ....
-   
-   
-   
-   
-   
-   
-   
 
 
-
-
-
+=begin internal note
 
 Werte pro Cipher-Suite:
 
@@ -95,19 +83,29 @@ Werte pro Cipher-Suite:
   
   source                  rfc123 
 
-
-
+=end internal note
 
 
 =head1 DESCRIPTION
 
 The purpose of this module is to collect and manage as many SSL/TLS cipher suites as possible. 
 It manages lists of cipher suites, can filter all by tags or names, can add new cipher suites to 
-an cipher list object or delete suites from the list. Cipher(lists) can be converted in their 
+a cipher list object or delete suites from the list. Cipher(lists) can be converted to their 
 binary constant, so that they can be used in a SSL/TLS handshake and vice versa.
 
 For best performance (and memory usage) the cipher lists are managed as ordinary hashrefs, 
-they are not objects. Only the cipher lists are objects.
+they are not objects. Only the cipher lists itself are objects.
+
+
+=head2 Tags
+
+There are a lot of tags, which can be used to select cipher suites.
+
+TODO: describe tags.
+
+Tags are:
+
+  
 
 
 =cut
@@ -136,6 +134,9 @@ has ciphers => (
                  handles => { count => "count", all => "elements", },
                  default => sub { [] },
                );
+
+
+# DTODO: put the hard coded list in extra module
 
 #
 # TLS list:
@@ -859,7 +860,7 @@ sub _set_tag_by_code
 
 =head1 METHODS
 
-
+There are a lot of Methods to create or manipulate cipher list objects:
 
 =head2 new_with_all
 
@@ -989,14 +990,11 @@ sub new_by_code
 
 =head2 ->unique()
 
-Removes duplicates from the cipher suites.
+Removes duplicates from the cipher suites. Duplicates are cipher suites with the same code.
 
+The order is not changed.
 
-Old Version: B<Important:> this sub changes the order of the ciphers. 
-They are in more or less random order!
-
-New: order not changed
-
+IANA cipher suites are preferred, when there are duplicates.
 
 =cut
 
@@ -1005,17 +1003,7 @@ New: order not changed
 sub unique
    {
    my $self = shift;
-
-   #   my %unique;
-   #   foreach my $cipher ( @{ $self->ciphers } )
-   #      {
-   #      # don't overwrite, if a former cipher is an iana cipher: then this has priority, keep it
-   #      $unique{ $cipher->{code} } = $cipher unless $unique{ $cipher->{code} }{iana};
-   #      }
-   #
-   #   $self->ciphers( [ values %unique ] );
-
-   #
+   
    my %seen;
    my @unique;
    my $position = 0;
@@ -1087,7 +1075,7 @@ sub cipher_spec
 Returns the SSL/TLS cipher_spec for the internal cipher list as SSLv2 cipher spec.
 
 Returns the cipher_spec as binary string. 3 bytes per cipher,
-compatible with SSLv2,  SSLv3/TLS.
+compatible with SSLv2, not SSLv3/TLS.
 
 
 =cut
