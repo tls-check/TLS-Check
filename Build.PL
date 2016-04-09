@@ -12,12 +12,18 @@ my $builder = Module::Build->new(
    configure_requires => {
                            'Module::Build' => 0,
                          },
-   build_requires => {
+   test_requires => {
                        'Test::More'           => 0,
                        'Test::Exception'      => 0.25,
                        'Test::MockObject'     => 1.20140408,
                        'Test::LWP::UserAgent' => 0.025,
                        'Test::File'           => 1.41,
+                       'Test::Differences'    => 0.62,
+                       'Test::Deep'           => 0.113,
+                       'Test::LWP::UserAgent' => 0.030,
+                       'Test::Perl::Critic'   => 1.03,
+                       'Test::Pod::Coverage'  => 1.08,
+                       'Test::Pod'            => 1.22,
                        'IPC::Run'             => 0.90,
                      },
 

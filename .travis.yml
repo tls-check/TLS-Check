@@ -1,0 +1,14 @@
+#
+# Enable Testing with Travis CI
+# See https://travis-ci.org/
+#
+
+language: perl
+perl:
+  - "5.22"
+
+# libidn11 for full IDN support in Net::DNS
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libidn11-dev
+

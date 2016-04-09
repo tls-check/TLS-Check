@@ -101,7 +101,11 @@ It may complain about missing dependencies. Install them manually with your favo
 
     ./Build installdeps
 
-Because CPAN runs a lot of tests, this may take a long time. If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before, see above.
+Because CPAN runs a lot of tests, this may take a long time. You can install all dependencies without testing by calling:
+
+    cpanm --installdeps --notest .
+
+If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before, see above.
 
 Then you may install TLS-Check:
 
