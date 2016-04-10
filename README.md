@@ -72,7 +72,7 @@ If you want to use IDN domain names (with characters other then US-ASCII, e.g. Ã
 
 ##### â€¢ Perl
 
-TLS-Check should work with an old Perl 5.10 and is tested with 5.14 and up.
+TLS-Check is written in Perl and should work with an old Perl 5.10 and is tested with 5.16 and up.
 
 * Perl is usually installed by your OS. Some Linux distributions deliver broken Perl packages and maybe you should install the perl default modules `perl-modules`. (untested, please report issues here)
 * If you don't want to (or can't) install all dependencies with the package manager of your OS, it may be better to install your own Perl to avoid conflicts with system packages. The best way is to use [perlbrew](http://perlbrew.pl) for this. A Perl without ithreads and full optimizations (-O3) is recommended.

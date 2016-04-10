@@ -6,6 +6,10 @@
 language: perl
 perl:
   - "5.22"
+  - "5.20"
+  - "5.18"
+  - "5.16"
+# Skip, because dependency installation problems:  - "5.14"
 
 # libidn11 for full IDN support in Net::DNS
 before_install:
