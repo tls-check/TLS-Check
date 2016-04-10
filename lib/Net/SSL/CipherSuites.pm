@@ -59,7 +59,7 @@ my $BASE_VERSION = "0.8"; use version; our $VERSION = qv( sprintf "$BASE_VERSION
    $ciphers->unique;
 
 
-=begin internal note
+=begin internal_note
 
 Werte pro Cipher-Suite:
 
@@ -83,7 +83,7 @@ Werte pro Cipher-Suite:
   
   source                  rfc123 
 
-=end internal note
+=end internal_note
 
 
 =head1 DESCRIPTION
@@ -1003,7 +1003,7 @@ IANA cipher suites are preferred, when there are duplicates.
 sub unique
    {
    my $self = shift;
-   
+
    my %seen;
    my @unique;
    my $position = 0;
