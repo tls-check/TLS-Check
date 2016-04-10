@@ -21,10 +21,9 @@ my $builder = Module::Build->new(
                       'Test::Differences'    => 0.62,
                       'Test::Deep'           => 0.113,
                       'Test::Perl::Critic'   => 1.03,
-                      'Test::Pod::Coverage'  => 1.10,
+                      'Test::Pod::Coverage'  => 1.08,
                       'Test::Pod'            => 1.22,
                       'IPC::Run'             => 0.90,
-                      'Pod::Coverage'        => 0.22,
                     },
 
    share_dir => {
