@@ -12,12 +12,17 @@ my $builder = Module::Build->new(
    configure_requires => {
                            'Module::Build' => 0,
                          },
-   build_requires => {
+   test_requires => {
                        'Test::More'           => 0,
                        'Test::Exception'      => 0.25,
                        'Test::MockObject'     => 1.20140408,
                        'Test::LWP::UserAgent' => 0.025,
                        'Test::File'           => 1.41,
+                       'Test::Differences'    => 0.62,
+                       'Test::Deep'           => 0.113,
+                       'Test::Perl::Critic'   => 1.03,
+                       'Test::Pod::Coverage'  => 1.08,
+                       'Test::Pod'            => 1.22,
                        'IPC::Run'             => 0.90,
                      },
 
@@ -61,10 +66,10 @@ my $builder = Module::Build->new(
                  'File::ShareDir'        => 1.102,
                  'IO::Socket::SSL'       => 2.016,
                  'LWP::UserAgent'        => 6.06,
-                 'PerlIO::via::Timeout'  => 0.32,
-                 'Parallel::ForkManager' => 1.17,           # make this OPTIONAL!
+                 'PerlIO::via::Timeout'  => 0.30,
+                 'Parallel::ForkManager' => 1.11,           # make this OPTIONAL!
                  'File::HomeDir'         => 1.0,
-                 'Net::IDN::Encode'      => 2.300,          # maybe replace by Net::LibIDN
+                 'Net::IDN::Encode'      => 2.202,          # maybe replace by Net::LibIDN
                },
    add_to_cleanup     => ['Security-TLSCheck-*'],
    create_makefile_pl => 'traditional',

@@ -10,7 +10,7 @@ use utf8;
 
 use Test::More;
 
-plan tests => 187;
+plan tests => 188;
 
 package Test::DomainFilter;
 
@@ -234,6 +234,9 @@ df_ok( 'www domain.info.',                         'domain.info' );
 
 
 df_ok( "replace-all", "everything-replaced.tld" );
+
+df_ok( "localhost", "localhost" );
+
 
 #
 done_testing();

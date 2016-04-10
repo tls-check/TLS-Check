@@ -48,13 +48,14 @@ There are a lot of really strange inputs; see also tests (221-domain_filter.t) .
 
 =cut
 
+# TODO: put this in a config file
 my %map = (
-   "replace-all"               => "everything-replaced.tld",
-   "www.omaschmidts.masche.de" => "omaschmidtsmasche.de",
-   "EGT Eppinger Gears"        => "eppinger-gears.com",
-   "www.Autohaus.Ford/Nuding"  => "ford-nuding-remshalden.de",
-   "http://www.medic-con.cde"  => "medic-con.de",
-
+            "replace-all"               => "everything-replaced.tld",
+            "www.omaschmidts.masche.de" => "omaschmidtsmasche.de",
+            "EGT Eppinger Gears"        => "eppinger-gears.com",
+            "www.Autohaus.Ford/Nuding"  => "ford-nuding-remshalden.de",
+            "http://www.medic-con.cde"  => "medic-con.de",
+            "localhost"                 => "localhost",     # localhost keeps localhost ...
           );
 
 my $DATADIR = eval { return File::ShareDir::module_dir(__PACKAGE__); } or DEBUG "Share-Dir-Eval-Error: $EVAL_ERROR";

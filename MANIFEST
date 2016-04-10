@@ -1,5 +1,6 @@
 .includepath
 .project
+.travis.yml
 bin/check_ciphers_single_domains.pl
 bin/csv-result-to-summary.pl
 bin/ext/check-ssl-heartbleed.pl
@@ -11,6 +12,7 @@ bin/helper/extract-scores.pl
 bin/helper/osaft-cipherlist-to-complete-perl.pl
 bin/helper/sslaudit.ini
 bin/helper/tmp_OLD_osaft-cipherlist-converter.pl
+bin/tls-check
 bin/tls-check-parallel.pl
 bin/tls-check.pl
 Build.PL
