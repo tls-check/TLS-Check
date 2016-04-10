@@ -13,18 +13,18 @@ my $builder = Module::Build->new(
                            'Module::Build' => 0,
                          },
    test_requires => {
-                       'Test::More'           => 0,
-                       'Test::Exception'      => 0.25,
-                       'Test::MockObject'     => 1.20140408,
-                       'Test::LWP::UserAgent' => 0.025,
-                       'Test::File'           => 1.41,
-                       'Test::Differences'    => 0.62,
-                       'Test::Deep'           => 0.113,
-                       'Test::Perl::Critic'   => 1.03,
-                       'Test::Pod::Coverage'  => 1.08,
-                       'Test::Pod'            => 1.22,
-                       'IPC::Run'             => 0.90,
-                     },
+                      'Test::More'           => 0,
+                      'Test::Exception'      => 0.25,
+                      'Test::MockObject'     => 1.20140408,
+                      'Test::LWP::UserAgent' => 0.025,
+                      'Test::File'           => 1.41,
+                      'Test::Differences'    => 0.62,
+                      'Test::Deep'           => 0.113,
+                      'Test::Perl::Critic'   => 1.03,
+                      'Test::Pod::Coverage'  => 1.08,
+                      'Test::Pod'            => 1.22,
+                      'IPC::Run'             => 0.90,
+                    },
 
    share_dir => {
       module => {
@@ -53,7 +53,7 @@ my $builder = Module::Build->new(
                  'MooseX::SimpleConfig'  => 0.10,
                  'Net::DNS'              => 0.80,
                  'Log::Log4perl'         => 1.44,
-                 'Net::LibIDN'           => 0.12,           # Needed by Net::DNS
+                 'Net::LibIDN'           => 0.12,             # Needed by Net::DNS
                  'Net::DNS::RR::DS'      => 0.20,
                  'LWP::Protocol::https'  => 6.06,
                  'Text::CSV_XS'          => 1.11,
@@ -67,9 +67,10 @@ my $builder = Module::Build->new(
                  'IO::Socket::SSL'       => 2.016,
                  'LWP::UserAgent'        => 6.06,
                  'PerlIO::via::Timeout'  => 0.30,
-                 'Parallel::ForkManager' => 1.11,           # make this OPTIONAL!
+                 'Parallel::ForkManager' => 1.11,             # make this OPTIONAL!
                  'File::HomeDir'         => 1.0,
-                 'Net::IDN::Encode'      => 2.202,          # maybe replace by Net::LibIDN
+                 'Net::IDN::Encode'      => 2.202,            # maybe replace by Net::LibIDN
+                 'autodie'               => 2.23,             # at least version from Perl 5.20, because of sleep bugs
                },
    add_to_cleanup     => ['Security-TLSCheck-*'],
    create_makefile_pl => 'traditional',
