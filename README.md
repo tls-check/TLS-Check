@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tls-check/TLS-Check.svg?branch=master)](https://travis-ci.org/tls-check/TLS-Check)
+
 # TLS-Check – Collect information about domains and their servers
 
 TLS-Check is 
