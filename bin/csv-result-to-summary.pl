@@ -11,7 +11,7 @@ use autodie;
 
 use utf8;
 
-use Carp qw(croak);
+use Carp qw(croak carp);
 use English qw( -no_match_vars );
 
 use Text::CSV_XS;
@@ -235,16 +235,23 @@ sub summarize
    # Pronzent weglassen wenn percent == undef
    for my $pos ( 0 .. $last_col )
       {
-      my $value = $result{ lc("$module/$check_name") }[$pos][ $extra{col} ];
+      my $value = $result{ lc("$module/$check_name") }[$pos][ $extra{col} ] // "";
 
       $value = sprintf( "%.3f", $value ) if $value =~ m{[.]};
 
       # Wenn Prozent da sein sollen
       if ( not $HACKY_CONF__NO_CATEGORIES and defined $extra{percent} )
          {
-         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // croak "Ups, da fehlt Prozent-Basis!";
-         $value = sprintf( "$value (%.3f%%)", ( $value / $percent_base ) * 100 );
-         $value =~ s{100[.]000%}{100%}x;
+         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // "";
+         if ($percent_base)
+            {
+            $value = sprintf( "$value (%.3f%%)", ( $value / $percent_base ) * 100 );
+            $value =~ s{100[.]000%}{100%}x;
+            }
+         else
+            {
+            $value = "$value (---%)";
+            }
          }
 
       $value =~ s{[.]}{,}g;                        #
@@ -252,10 +259,18 @@ sub summarize
 
       if ( $HACKY_CONF__NO_CATEGORIES and defined $extra{percent} )
          {
-         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // croak "Ups, da fehlt Prozent-Basis!";
-         my $percent_value = sprintf( "%.3f%%", ( $value / $percent_base ) * 100 );
-         $percent_value =~ s{100[.]000%}{100%}x;
-         $percent_value =~ s{[.]}{,}g;
+         my $percent_base = $result{ lc( $extra{percent} ) }[$pos][ $extra{percentcol} ] // "";
+         my $percent_value;
+         if ($percent_base)
+            {
+            $percent_value = sprintf( "%.3f%%", ( $value / $percent_base ) * 100 );
+            $percent_value =~ s{100[.]000%}{100%}x;
+            $percent_value =~ s{[.]}{,}g;
+            }
+         else
+            {
+            $value = "$value (---%)";
+            }
          push @fields, $percent_value;
          }
 
