@@ -33,14 +33,7 @@ my $builder = Module::Build->new(
                   'Security::TLSCheck'                    => [ 'conf', 'bin/ext', ],
                 },
 
-      #dist => [ 'conf', ],
-
                 },
-
-   #   config_files => {
-   #      '' => '',
-   #   },
-
 
    # TODO:
    # Check minimal required versions!
@@ -79,5 +72,3 @@ my $builder = Module::Build->new(
 $builder->create_build_script();
 
 
-# FreeBSD Ports:
-# portmaster devel/p5-Config-General devel/p5-IO-All www/p5-libwww www/p5-LWP-Protocol-https devel/p5-Log-Log4perl devel/p5-Moose devel/p5-MooseX-Getopt devel/p5-MooseX-SimpleConfig dns/p5-Net-DNS dns/p5-Net-DNS-RR-SRV-Helper dns/p5-Net-LibIDN textproc/p5-Text-CSV_XS devel/p5-Test-Exception devel/p5-Test-File devel/p5-Test-MockObject
