@@ -85,7 +85,7 @@ On some Perl versions this is already installed, you can check this with:
 perl -MModule::Build -E 'say "Module-Build-version installed: $Module::Build::VERSION"'
 ```
 
-When there is an error message, you must `Module::Build`, either with your package manager or via CPAN:
+When there is an error message, you should install `Module::Build`, either with your package manager or via CPAN:
 
 ```
 cpan Module::Build
