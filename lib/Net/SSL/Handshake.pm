@@ -16,6 +16,11 @@ use Net::SSL::Handshake::Extensions::ServerName;
 use Net::SSL::Handshake::Extensions::EllipticCurves;
 use Net::SSL::Handshake::Extensions::ECPointFormats;
 
+
+#
+# TODO: move all SSL/TLS Constants in extra module
+#
+
 use Exporter qw(import);
 
 my @ssl_versions = qw($SSLv2 $SSLv3 $TLSv1 $TLSv11 $TLSv12);
@@ -34,26 +39,77 @@ Readonly our $TLSv11 => 0x0302;
 Readonly our $TLSv12 => 0x0303;
 
 Readonly our %CONTENT_TYPE => (
-                               change_cipher_spec => 20,
-                               alert              => 21,
-                               handshake          => 22,
-                               application_data   => 23,
-                               early_handshake    => 25,
-                             );
+                                change_cipher_spec => 20,
+                                alert              => 21,
+                                handshake          => 22,
+                                application_data   => 23,
+                                early_handshake    => 25,
+                              );
 
 
 Readonly our %HANDSHAKE_TYPE => (
-                                 client_hello         => 1,
-                                 server_hello         => 2,
-                                 session_ticket       => 4,
-                                 hello_retry_request  => 6,
-                                 encrypted_extensions => 8,
-                                 certificate          => 11,
-                                 certificate_request  => 13,
-                                 certificate_verify   => 15,
-                                 server_configuration => 17,
-                                 finished             => 20,
-                               );
+                                  client_hello         => 1,
+                                  server_hello         => 2,
+                                  session_ticket       => 4,
+                                  hello_retry_request  => 6,
+                                  encrypted_extensions => 8,
+                                  certificate          => 11,
+                                  certificate_request  => 13,
+                                  certificate_verify   => 15,
+                                  server_configuration => 17,
+                                  finished             => 20,
+                                );
+
+
+
+Readonly our %ALERT_LEVEL => (
+                               warning => 1,
+                               fatal   => 2,
+                             );
+
+Readonly our %ALERT_LEVEL_REVERSE => reverse %ALERT_LEVEL;
+
+Readonly our %ALERT_DESCRIPTION => (
+                                     close_notify                    => 0,
+                                     unexpected_message              => 10,
+                                     bad_record_mac                  => 20,
+                                     decryption_failed_RESERVED      => 21,
+                                     record_overflow                 => 22,
+                                     decompression_failure_RESERVED  => 30,
+                                     handshake_failure               => 40,
+                                     no_certificate_RESERVED         => 41,
+                                     bad_certificate                 => 42,
+                                     unsupported_certificate         => 43,
+                                     certificate_revoked             => 44,
+                                     certificate_expired             => 45,
+                                     certificate_unknown             => 46,
+                                     illegal_parameter               => 47,
+                                     unknown_ca                      => 48,
+                                     access_denied                   => 49,
+                                     decode_error                    => 50,
+                                     decrypt_error                   => 51,
+                                     export_restriction_RESERVED     => 60,
+                                     protocol_version                => 70,
+                                     insufficient_security           => 71,
+                                     internal_error                  => 80,
+                                     inappropriate_fallback          => 86,
+                                     user_canceled                   => 90,
+                                     no_renegotiation_RESERVED       => 100,
+                                     missing_extension               => 109,
+                                     unsupported_extension           => 110,
+                                     certificate_unobtainable        => 111,
+                                     unrecognized_name               => 112,
+                                     bad_certificate_status_response => 113,
+                                     bad_certificate_hash_value      => 114,
+                                     unknown_psk_identity            => 115,
+                                   );
+
+Readonly our %ALERT_DESCRIPTION_REVERSE => reverse %ALERT_DESCRIPTION;
+
+
+# not exported: no vars, constant
+Readonly my $BIT_15        => 2**15;               # or 0x8000
+Readonly my $BITS_01111111 => 0x7f;
 
 
 =encoding utf8
@@ -354,14 +410,14 @@ has record_template => (
                          isa     => "Str",
                          traits  => ['String'],
                          default => "",
-                         handles => { add_record_template => "append", clear_record_template => "clear", }
+                         handles => { add_record_template => "append", clear_record_template => "clear", },
                        );
 has _record_data => (
                       is      => "ro",
                       isa     => "ArrayRef",
                       traits  => ['Array'],
                       default => sub { [] },
-                      handles => { add_record_data => "push", clear_record_data => "clear", record_data => "elements", }
+                      handles => { add_record_data => "push", clear_record_data => "clear", record_data => "elements", },
                     );
 
 #<<<
@@ -374,8 +430,8 @@ has error            => ( is => "rw", isa => "Int",                    default =
 has ciphers          => ( is => "ro", isa => "Net::SSL::CipherSuites", required => 1, );
 has accepted_ciphers => ( is => "rw", isa => "Net::SSL::CipherSuites", default => sub { Net::SSL::CipherSuites->new });
 has timeout          => ( is => "ro", isa => "Int",                    default => 60, );
-has ssl_version      => ( is => "ro", isa => "Int",                    default => $TLSv12);
-has sni              => ( is => "ro", isa => "Bool",                   default => 1);
+has ssl_version      => ( is => "ro", isa => "Int",                    default => $TLSv12, );
+has sni              => ( is => "ro", isa => "Bool",                   default => 1, );
 
 # Server messages
 has server_version   => ( is => "rw", isa => "Int", ); 
@@ -385,9 +441,10 @@ has ok               => (is => "ro",  isa => "Bool", writer => "_ok", );
 
 
 # TODO: readonly with private writer!
-has alert            => (is => "rw",  isa => "Bool", );
-has no_cipher_found  => (is => "rw",  isa => "Bool", );
-
+has alert             => ( is => "rw", isa => "Bool", );
+has no_cipher_found   => ( is => "rw", isa => "Bool", );
+has alert_level       => ( is => "rw", isa => "Str", );
+has alert_description => ( is => "rw", isa => "Str", );
 
 #>>>
 
@@ -409,11 +466,12 @@ sub _build_socket
    return $socket;
    }
 
-sub _to_hex
-   {
-   return join( " ", map { sprintf "%02X", $ARG } unpack( "C*", shift ) );
-   }
-
+# for some Debug
+#sub _to_hex
+#   {
+#   return join( " ", map { sprintf "%02X", $ARG } unpack( "C*", shift ) );
+#   }
+#
 
 =head2 send_record
 
@@ -476,7 +534,7 @@ sub record_as_string
 
    if ( $self->ssl_version == $SSLv2 )
       {
-      $record_header = pack( "n", length($record_data) | 0x8000 );
+      $record_header = pack( "n", length($record_data) | $BIT_15 );
       }
    else
       {
@@ -509,7 +567,8 @@ generate some random ...
 
 sub challenge
    {
-   return pack( "NC[28]", time, ( map { int( rand(256) ) } ( 1 .. 28 ) ) );
+   return
+      pack( "NC[28]", time, ( map { int( rand(256) ) } ( 1 .. 28 ) ) );  ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
    }
 
 
@@ -570,14 +629,14 @@ sub build_client_hello
       #  n  Client-Version
       #  n  Cipher spec len
       #  n  Session-ID len   => 0
-      #  n  challenge len
+      #  n  challenge len (usually 32)
       #  a* cipher spec data
       #  a* session id data  => empty
       #  a* challenge data
 
       $self->add_to_record(
-                            "Cnnnna*a[0]a[32]", $MT_CLIENT_HELLO, $self->ssl_version, length($cipher_spec),
-                            0,                  32,               $cipher_spec,       "",
+                            "Cnnnna*a[0]a[32]", $MT_CLIENT_HELLO,           $self->ssl_version, length($cipher_spec),
+                            0,                  length( $self->challenge ), $cipher_spec,       "",
                             $self->challenge
                           );
       }
@@ -665,9 +724,9 @@ sub build_extensions
    $extensions .= Net::SSL::Handshake::Extensions::ServerName->new( hostname => $self->host )->data if $self->sni;
    $extensions .= Net::SSL::Handshake::Extensions::ECPointFormats->new()->data;
    $extensions .= Net::SSL::Handshake::Extensions::EllipticCurves->new()->data;
-   
+
    # $extensions .= ...
-   
+
    return pack( "n a*", length($extensions), $extensions );
    }
 
@@ -689,23 +748,13 @@ sub receive_record
 
    my $content_type = unpack( "C", $data );
 
-   return $self->sslv2_server_hello($data) if $content_type & 0x80;    # = $MT_SERVER_HELLO;
+   # return $self->sslv2_server_hello($data) if $content_type & 0x80;    # = $MT_SERVER_HELLO;
 
-   #   say "v3+";
-   #
-   #   die "jkgkjhgkjhg";
-   #
-   #   #use Data::Dumper;
-   #   #   say Dumper( [ $msg, $session_id_hit, $cert_type, $server_version, $cert_len, $cipher_spec_len, $connection_id_len ] ),
-   #   #      "\n", _to_hex($cert_data), "\n", _to_hex( $cipher_spec), "\n", _to_hex("$connection_id");
-   #
-   #
-   #
-   #   $content_type &= 0x7f;
-   #   return $self->sslv2_server_hello($content_type) if $content_type == $MT_SERVER_HELLO;
+   $content_type &= $BITS_01111111;                # 0x7f -- remove highest bit of 1 byte type
+   return $self->sslv2_server_hello($content_type) if $content_type == $MT_SERVER_HELLO;
 
    undef $data;
-   $self->recv( $data, 4 );
+   $self->recv( $data, 2 + 2 );                    # protocol version and record length (à 16 bit)
    croak "no protocol-version/length received" unless length($data);
 
    my ( $protocol_version, $record_lenght ) = unpack( "nn", $data );
@@ -818,7 +867,7 @@ sub sslv2_server_hello
    my $data;
    $self->recv( $data, 1 );
 
-   my $record_len = unpack( "n", "$first_byte$data" ) & 0x7fff;
+   my $record_len = unpack( "n", "$first_byte$data" );
 
    undef $data;
    $self->recv( $data, $record_len );
@@ -858,6 +907,7 @@ parse alert message
 
 =cut
 
+# TODO: what should be the API? ;-)
 
 sub parse_alert
    {
@@ -865,14 +915,17 @@ sub parse_alert
    my $data = shift;
 
    $self->alert(1);
+   my ( $alert_level, $alert_description ) = unpack( "CC", $data );
 
-   $self->no_cipher_found(1) if $data eq "\x02\x28";
+   $self->alert_level( $ALERT_LEVEL_REVERSE{$alert_level} );
+   $self->alert_description( $ALERT_DESCRIPTION_REVERSE{$alert_description} );
+
+   $self->no_cipher_found(1) if $self->alert_level eq "fatal" and $self->alert_description eq "handshake_failure";
 
    # say "ALERT-ZEUG:  " . _to_hex($data);
 
    return $self;
    }
-
 
 1;
 

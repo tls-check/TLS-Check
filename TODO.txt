@@ -3,6 +3,9 @@
 * Add output mode: result for each domain in human readable form.
   => Activate automatically when taking domain names on CLI.
 
+* i18n csv-result-to-summary.pl for other languages then german ... ;-)
+
+
 * store if web check was successful with www. or without; => use this in CipherStrengts 
 
 * New Subtests:
@@ -25,6 +28,9 @@
 
 
 * Rewrite parallel mode with fork pool and queue to speed up everything
+  * maybe use MCE for this, see:
+    https://github.com/marioroy/mce-perl
+    http://search.cpan.org/dist/MCE/lib/MCE.pod
 
 
 

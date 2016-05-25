@@ -36,7 +36,7 @@ use version; our $VERSION = sprintf "%d", q$Revision: 647 $ =~ /(\d+)/xg;
 
 #<<<
 
-our $key_figures = 
+my $key_figures = 
    [
 
    { name => "Supports SSLv2",             type => "flag",  source => "supports_sslv2",           description => "Server supports SSLv2" }, 
@@ -155,7 +155,7 @@ has properties => ( is => "rw", isa => "Net::SSL::GetServerProperties",
       supports_pfs         
       supports_only_pfs    
       
-      ) ] );
+      ), ], );
 
 #>>>
 
@@ -199,7 +199,7 @@ sub join_cipher_names
    {
    my $self = shift;
 
-   my $ciphers = join( ":", $self->properties->supported_cipher_names );
+   my $ciphers = join( q{:}, $self->properties->supported_cipher_names );
    TRACE "Score ${ \$self->score }, Supported Ciphers for ${ \$self->domain }: $ciphers";
    return $ciphers;
    }

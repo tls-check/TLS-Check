@@ -12,7 +12,8 @@ use English qw( -no_match_vars );
 
 use Data::Dumper;
 
-plan tests => 8;
+if   ( $ENV{TRAVIS} ) { plan skip_all => "It looks like we can't run SMTP tests with Travis"; }
+else                  { plan tests    => 8; }
 
 use Net::SSL::Handshake qw(:all);
 use Net::SSL::Handshake::StartTLS::SMTP;

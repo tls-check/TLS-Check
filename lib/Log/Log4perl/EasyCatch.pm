@@ -14,6 +14,8 @@ use FindBin qw($Bin);
 use English qw( -no_match_vars );
 use Readonly;
 
+use File::HomeDir;
+
 use Log::Log4perl qw(:easy);
 
 use base qw(Exporter);
@@ -76,7 +78,7 @@ my $initialised;
 if ( not $initialised and not $COMPILING )
    {
 
-   no warnings qw(once);
+   no warnings qw(once);                           ## no critic (TestingAndDebugging::ProhibitNoWarnings)
    Readonly our $DEFAULT_LOG_CONFIG => $Security::TLSCheck::LOG_CONFIG_FILE // $ENV{LOG_CONFIG}
       // "$Bin/../conf/tls-check-logging.properties";
 

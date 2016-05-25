@@ -40,8 +40,6 @@ TODO: Parse XML
 
 =cut
 
-# TODO: ALL and Everything!
-
 #<<<
 
 {
@@ -83,7 +81,7 @@ sub run_check
 
    unless ( $self->other_check("Security::TLSCheck::Checks::Web")->http_active )
       {
-      DEBUG "Skipped AgeDE tests for $www because no https active";
+      DEBUG "Skipped AgeDE tests for $www because no HTTP active";
       return;
       }
 
@@ -92,9 +90,9 @@ sub run_check
    my $ua = LWP::UserAgent->new( timeout => $self->timeout, agent => $self->user_agent_name, );
    my $response = $ua->get("http://$www/age-de.xml");
 
-   $self->age_de_xml($response->decoded_content) if $response->is_success;
-   
-   
+   $self->age_de_xml( $response->decoded_content ) if $response->is_success;
+
+
    return $self->result;
 
    } ## end sub run_check
@@ -126,7 +124,7 @@ A simple check, if there is really an age-de.xml.
 sub has_age_declaration
    {
    my $self = shift;
-   return 1 if ($self->age_de_xml // "") =~ m{<age-declaration}ix;
+   return 1 if ( $self->age_de_xml // "" ) =~ m{<age-declaration}ix;
    return;
    }
 
@@ -139,7 +137,7 @@ Gets the default age from an existing age-de.xml or undef;
 sub default_age
    {
    my $self = shift;
-   my ($default_age) = ($self->age_de_xml // "") =~ m{ <default-age>\s* (\d+) }sx;
+   my ($default_age) = ( $self->age_de_xml // "" ) =~ m{ <default-age>\s* (\d+) }sx;
    return $default_age;
    }
 
@@ -153,7 +151,7 @@ Gets the minage from an existing age-de.xml or undef;
 sub min_age
    {
    my $self = shift;
-   my ($min_age) = ($self->age_de_xml // "") =~ m{ <min-age>\s* (\d+) }sx;
+   my ($min_age) = ( $self->age_de_xml // "" ) =~ m{ <min-age>\s* (\d+) }sx;
    return $min_age;
    }
 

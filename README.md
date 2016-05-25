@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tls-check/TLS-Check.svg?branch=master)](https://travis-ci.org/tls-check/TLS-Check)
+
 # TLS-Check – Collect information about domains and their servers
 
 TLS-Check is 
@@ -66,11 +68,11 @@ The most easy way to install TLS-Check is using FreeBSD and install it as port o
 
 ##### • LibIDN
 
-If you want to use IDN domain names (with charactes other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
+If you want to use IDN domain names (with characters other then US-ASCII, e.g. äöü.tld), LibIDN is needed. You should install it with the package manager of your OS, e.g. `apt-get install libidn11-dev` should do this on Debian and Ubuntu.
 
 ##### • Perl
 
-TLS-Check should work with an old Perl 5.10 and is tested with 5.14 and up.
+TLS-Check is written in Perl and should work with an old Perl 5.10 and is tested with 5.16 and up.
 
 * Perl is usually installed by your OS. Some Linux distributions deliver broken Perl packages and maybe you should install the perl default modules `perl-modules`. (untested, please report issues here)
 * If you don't want to (or can't) install all dependencies with the package manager of your OS, it may be better to install your own Perl to avoid conflicts with system packages. The best way is to use [perlbrew](http://perlbrew.pl) for this. A Perl without ithreads and full optimizations (-O3) is recommended.
@@ -83,7 +85,7 @@ On some Perl versions this is already installed, you can check this with:
 perl -MModule::Build -E 'say "Module-Build-version installed: $Module::Build::VERSION"'
 ```
 
-When there is an error message, you must `Module::Build`, either with your package manager or via CPAN:
+When there is an error message, you should install `Module::Build`, either with your package manager or via CPAN:
 
 ```
 cpan Module::Build
@@ -101,7 +103,11 @@ It may complain about missing dependencies. Install them manually with your favo
 
     ./Build installdeps
 
-Because CPAN runs a lot of tests, this may take a long time. If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before, see above.
+Because CPAN runs a lot of tests, this may take a long time. You can install all dependencies without testing by calling:
+
+    cpanm --installdeps --notest .
+
+If you want to do DNS checks on IDN-Domains, the installation of the `Net::LibIDN` module is necessary. But this needs the LibIDN library, so you should install this before, see above.
 
 Then you may install TLS-Check:
 
@@ -114,14 +120,14 @@ As alternative you can start everything without installing directly from `bin`, 
 
 ### Short summary
 
-    tls-check-parallel.pl --files=path/to/domain-file.txt --outfile=result/my-result.csv
-    csv-result-to-summary.pl result/my-result.csv > result/summary.csv
+    tls-check-parallel.pl --files=path/to/domain-file.txt --outfile=results/my-result.csv
+    csv-result-to-summary.pl results/my-result.csv > result/summary.csv
 
 You may also run it without parameter, then it gets input from STDIN and writes the result to STDOUT.
 
 csv-result-to-summary.pl is a hack to extract the most important results and create an easy to read CSV, which can be used with LibreOffice, Excel, Numbers, … But at the moment the descriptions of the summary are in german.
 
-You can also use the full result, but it's hard to read.
+You can also use the full result (which is also CSV), but it's harder to read.
 
 ### More detailed usage
 
@@ -129,6 +135,7 @@ After installation there are some new executables:
 
     tls-check.pl
     tls-check-parallel.pl
+    tls-check               (symlink to tls-check-parallel.pl)
   
 They are the same, but, tls-check-parallel can query domains in parallel.
 
@@ -172,7 +179,17 @@ The domain file is a CSV and has one or more colums: first column is a domain na
 
 It's OK to have no category, so the file simply contains one domain per line.
 
-If you have enough memory it's OK to set --jobs to a high value. But at the moment the parallel mode is not optimal.
+If you have enough memory it's OK to set --jobs to a high value (e.g. 50 when running all checks on a 4 core machine with 16 GB RAM or more when not running all checks). But at the moment the parallel mode is not optimal, because it spawns a new process for every domain.
+
+The result file is a CSV with a lot of detailed results. You can read it with Excel, LibreOffice, Numbers or any other spreadsheet program.
+
+You can use `csv-result-to-summary.pl` to get a summary of the result: 
+
+    csv-result-to-summary.pl results/my-result.csv > result/summary.csv
+
+This script uses standard unix input/output via one or more file or STDIN (for input) and prints the result to STDOUT, so you can redirect this everywhere.
+
+If you want your own summary, you may change `csv-result-to-summary.pl`. It's a little bit hacky, but works.
 
 
 ### Logfiles
@@ -191,15 +208,16 @@ It's sure, that there are bugs. Please report them, patches and fixes are welcom
 * Some tests are written for execution in my local development environment, should be rewritten
 * write more and better tests, e.g. with different SSL implementations
 * Single standalone program for getting SSL/TLS properties should be rewritten (Net::SSL::GetServerProperties module should provide list of all checks)
-* Split some modules into extra Distributions
+* Split some modules into extra Distributions (e.g. Net::SSL::xxx Modules)
 * publish everything on CPAN (after splitting in distributions)
 * There are some other TODOs … ;-)
 * MX handling works as expected, but should be rewritten, e.g. to better handle categories
+* Heartbleed check uses external executable; should be implemented as module.
 
 
 ## Mailing list and support
 
-There is a mailing list. Until there is much traffic, we habe only one for developers and users together.
+There is a mailing list. Until there is much traffic, we have only one for developers and users together.
 
 * [Info Page](https://lists.odem.org/sympa/info/tls-check)
 * [Subscribe via web interface](https://lists.odem.org/sympa/subscribe/tls-check)

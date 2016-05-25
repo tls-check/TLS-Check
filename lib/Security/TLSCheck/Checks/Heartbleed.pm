@@ -40,7 +40,7 @@ use version; our $VERSION = sprintf "%d", q$Revision: 657 $ =~ /(\d+)/xg;
 At the moment this calls Steffen Ullrichs check-ssl-heartbleed.pl, 
 which can be found here: https://github.com/noxxi/p5-ssl-tools
 
-Later some parts of this should be integrated into this module, 
+Later some parts of this should be integrated into this module,
 because running external executables is expensive.
 
 =cut
@@ -215,10 +215,10 @@ sub _check_heartbleed
 
    if   ($tls_type) { $cli_params = "--starttls $tls_type $host"; }
    else             { $cli_params = "$host:https"; }
-   
+
    my $EXTBIN_DIR = eval { return File::ShareDir::module_dir("Security::TLSCheck") } // "$Bin/ext";
-   
-   die "check-ssl-heartbleed.pl not found" unless -x "$EXTBIN_DIR/check-ssl-heartbleed.pl";
+
+   die "check-ssl-heartbleed.pl not found\n" unless -x "$EXTBIN_DIR/check-ssl-heartbleed.pl";
 
    DEBUG "Run heartbleed-Check with '$cli_params'";
    my @result = qx($EXTBIN_DIR/check-ssl-heartbleed.pl $cli_params 2>&1);    ## no critic (InputOutput::ProhibitBacktickOperators)

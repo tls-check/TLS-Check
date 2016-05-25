@@ -46,7 +46,9 @@ use Parallel::ForkManager;
 use Storable;                                      # => used internally by PFM; => use Sereal instead?
 
 use Time::HiRes qw(time);
+use Readonly;
 
+Readonly my $HARD_TIMEOUT => 1200;                 # stop after 20 minutes ...
 
 
 # Attributes and default values.
@@ -100,7 +102,7 @@ sub init_domain_loop
             }
 
          DEBUG "Master process got result for $domain";
-         
+
          # Replace copy of info-element with a reference to the original
          # saves a lot of memory when running with thousands of domains
          foreach my $check (@$result)
@@ -152,14 +154,14 @@ sub analyse
       ERROR "Fatal Error, should never happen: HARD TIMEOUT for $domain reached!";
       die "FATAL: HARD TIMEOUT for $domain reached!\n";
    };                                              # NB: \n required
-   alarm 1200;                                      # Hard timeout ...
+   alarm $HARD_TIMEOUT;                            # Hard timeout ...
 
    my $starttime = time;
    INFO "Start analyse $domain (via $read_domain, category $category) (domain # $counter)";
    my $tc = Security::TLSCheck->new( domain => $domain, category => $category, app => $self );
    my $result = $tc->run_all_checks;
 
-   my $runtime = sprintf("%.3f", time - $starttime);
+   my $runtime = sprintf( "%.3f", time - $starttime );
    INFO "DONE analyse $domain (category $category) (domain # $counter) in $runtime Seconds";
 
    $pm->finish( 0, [ $domain, $category, $result ] );

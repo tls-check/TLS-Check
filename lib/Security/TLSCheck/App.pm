@@ -169,7 +169,7 @@ sub BUILD
 
    foreach my $check_name ( $self->checks )
       {
-      $check_name =~ s{ [^\w\d:] }{}gx;            # strip of all not allowed chars
+      $check_name =~ s{ [^\w\d:] }{}gx;            # remove all not allowed chars for eval!
       TRACE "Load Module Security::TLSCheck::Checks::$check_name";
       eval "require Security::TLSCheck::Checks::$check_name;"    ## no critic (BuiltinFunctions::ProhibitStringyEval)
          or die "Can't use check $check_name: $EVAL_ERROR\n";
@@ -212,7 +212,7 @@ sub run
          next unless $read_domain;
          next if $read_domain =~ m{^[#]}x;
          next if $read_domain eq "INTERNET_NR";    # skip header line
-         
+
          $category //= "<no category>";
 
          DEBUG "Next Domain: $read_domain in category $category";
@@ -258,16 +258,12 @@ sub run
 
    my $endtime  = time;
    my $duration = $endtime - $starttime;
-   my $minutes  = int( $duration / 60 );
-   my $rest_sec = $duration % 60;
-   my $hours    = int( $minutes / 60 );
-   my $rest_min = $minutes % 60;
+   my $minutes  = int( $duration / 60 );           ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
+   my $rest_sec = sprintf( "%02d", $duration % 60 );    ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
+   my $hours    = int( $minutes / 60 );            ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
+   my $rest_min = sprintf( "%02d", $minutes % 60 );     ## no critic (ValuesAndExpressions::ProhibitMagicNumbers)
 
-   $rest_sec = "0$rest_sec" if $rest_sec < 10;
-   $rest_min = "0$rest_min" if $rest_min < 10;
-
-   INFO localtime . " Total Runtime: $duration seconds -- $hours::$rest_min::$rest_sec";
-
+   INFO localtime . " Total Runtime: $duration seconds -- $hours:$rest_min:$rest_sec hours";
 
    return;
    } ## end sub run

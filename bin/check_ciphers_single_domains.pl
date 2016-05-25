@@ -1,21 +1,26 @@
 #!/usr/bin/env perl
+## no critic
+
+# TODO: This is a hack and will be changed
 
 use strict;
 use warnings;
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
+use English qw( -no_match_vars );
+
 
 use Net::SSL::GetServerProperties;
 
 use 5.010;
 
-say "--";
+say "-- ";
 say "-- TLS-Check / Net::SSL::GetServerProperties -- Version $Net::SSL::GetServerProperties::VERSION";
 say "-- Small helper for getting a quick (and incomplete) overview of one or more hosts";
-say "--";
-say "-- usage: $0 <hostname> [ <more mosts> ... ]";
-say "--";
+say "-- ";
+say "-- usage: $PROGRAM_NAME <hostname> [ <more mosts> ... ]";
+say "-- ";
 say "";
 
 foreach my $host (@ARGV)

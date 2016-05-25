@@ -36,24 +36,25 @@ Net::SSL::Handshake::Extensions::ECPointFormats.
 
 
 use Moose;
-
+use Carp qw(croak);
+use English qw( -no_match_vars );
 
 has extension_template => (
                             is      => "ro",
                             isa     => "Str",
                             traits  => ['String'],
                             default => "",
-                            handles => { add_extension_template => "append", clear_extension_template => "clear", }
+                            handles => { add_extension_template => "append", clear_extension_template => "clear", },
                           );
 has _extension_data => (
-                       is      => "ro",
-                       isa     => "ArrayRef",
-                       traits  => ['Array'],
-                       default => sub { [] },
-                       handles => { add_extension_data => "push", clear_extension_data => "clear", extension_data => "elements", }
+                      is      => "ro",
+                      isa     => "ArrayRef",
+                      traits  => ['Array'],
+                      default => sub { [] },
+                      handles => { add_extension_data => "push", clear_extension_data => "clear", extension_data => "elements", },
 );
 
-has type => ( is => "ro", isa => "Int", default => sub { die "Subclass must set default value!" }, );
+has type => ( is => "ro", isa => "Int", default => sub { croak "Subclass must set default value!" }, );
 
 
 =head2 ->data
@@ -65,8 +66,8 @@ Returns the binary string for this extension.
 sub data
    {
    my $self = shift;
-   my $extension_data = pack( $self->extension_template,$self->extension_data );
-   return pack( "n n a*",  $self->type, length($extension_data), $extension_data );
+   my $extension_data = pack( $self->extension_template, $self->extension_data );
+   return pack( "n n a*", $self->type, length($extension_data), $extension_data );
    }
 
 =head2 ->add($pattern, @data)
@@ -79,8 +80,8 @@ sub add
    {
    my $self     = shift;
    my $template = shift;
-   $self->add_extension_data(@_);
 
+   $self->add_extension_data(@ARG);
    $self->add_extension_template($template);
 
    return $self;
