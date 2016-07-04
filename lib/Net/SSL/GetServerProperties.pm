@@ -753,7 +753,6 @@ sub supports_weak_ciphers_no_bettercrypto_b
 
 
 
-
 =head2 check_all_ciphers($ssl_version)
 
 Tests which CipherSuite a server supports
