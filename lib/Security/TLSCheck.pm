@@ -10,12 +10,12 @@ Security::TLSCheck - Application for checking server's TLS capability
 
 =head1 VERSION
 
-Version 1.0.2, $Revision: 651 $
+Version 1.0.2, $Revision: 658 $
 
 =cut
 
 #<<<
-my $BASE_VERSION = "1.0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 651 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "1.0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 658 $ =~ /(\d+)/xg );
 #>>>
 
 

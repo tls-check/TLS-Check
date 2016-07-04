@@ -32,7 +32,7 @@
     https://github.com/marioroy/mce-perl
     http://search.cpan.org/dist/MCE/lib/MCE.pod
 
-
+* Check result when connecting Exim with unreadable cert
 
 * Loop through IP ranges an check IP-Adresses
 

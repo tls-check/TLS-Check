@@ -24,7 +24,7 @@ Security::TLSCheck::Checks::DNS - Basic DNS Checks
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 621 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS

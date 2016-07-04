@@ -14,11 +14,11 @@ Net::SSL::Handshake::Extensions::ServerName - SNI extension for TLS Handshake
 
 =head1 VERSION
 
-Version 0.1.x, $Revision: 629 $
+Version 0.1.x, $Revision: 658 $
 
 =cut
 
-use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 629 $ =~ /(\d+)/xg ) );
+use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg ) );
 
 has "+type" => ( default => 0 );
 

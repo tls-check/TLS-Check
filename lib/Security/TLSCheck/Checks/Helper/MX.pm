@@ -20,7 +20,7 @@ Security::TLSCheck::Checks::Helper::MX - Get all MX, cache if already checked, .
 
 =cut
 
-use version; our $VERSION = qv( "v0.2." . ( sprintf "%d", q$Revision: 641 $ =~ /(\d+)/xg ) );
+use version; our $VERSION = qv( "v0.2." . ( sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg ) );
 
 
 =head1 SYNOPSIS

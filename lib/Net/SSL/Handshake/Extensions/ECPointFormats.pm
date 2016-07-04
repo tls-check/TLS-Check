@@ -13,11 +13,11 @@ Net::SSL::Handshake::Extensions::ECPointFormats - client extension for TLS Hands
 
 =head1 VERSION
 
-Version 0.1.x, $Revision: 638 $
+Version 0.1.x, $Revision: 658 $
 
 =cut
 
-use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 638 $ =~ /(\d+)/xg ) );
+use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg ) );
 
 has "+type" => ( default => 0x000b );
 

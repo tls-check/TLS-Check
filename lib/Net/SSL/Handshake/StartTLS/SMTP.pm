@@ -23,7 +23,7 @@ Net::SSL::Handshake::StartTLS::SMTP - SSL Handshake via SMTP+StartTLS
 
 =head1 VERSION
 
-Version 0.1.x, $Revision: 640 $
+Version 0.1.x, $Revision: 658 $
 
 
 =cut
