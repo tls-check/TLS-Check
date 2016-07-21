@@ -32,6 +32,7 @@
     https://github.com/marioroy/mce-perl
     http://search.cpan.org/dist/MCE/lib/MCE.pod
 
+* Build ready-to-use images for VMware, VirtualBox, iocage etc.
 
 
 * Loop through IP ranges an check IP-Adresses
