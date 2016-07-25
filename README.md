@@ -110,7 +110,9 @@ cpan Module::Build
 
 #### Install TLS-Check
 
-Now download Download and unpack TLS-Check. Then run in the main source directory:
+At the moment TLS-Check is not yet available on CPAN. So, you have to install it manually: Download and unpack TLS-Check. **Do not unpack it on Windows:** Windows has no Symlinks and some files will be broken.
+
+Then run in the main source directory:
 
     perl Build.PL
 
