@@ -56,13 +56,21 @@ TLS-Check was developed on FreeBSD and OS X, but also works with Linux. It's not
 
 ### Install as packages
 
-The most easy way to install TLS-Check is using FreeBSD and install it as port or package.
+The most easy way to install TLS-Check is using [FreeBSD](https://www.freebsd.org/) and install it as port or package. [FreeBSD](https://www.freebsd.org/) is an [UNIX-like operating system](https://en.wikipedia.org/wiki/FreeBSD) similar to Linux, you may read [FreeBSD Quickstart Guide for Linux Users](https://www.freebsd.org/doc/en/articles/linux-users/article.html) as Linux user. You can download [installer and virtual machine images](https://www.freebsd.org/where.html).
 
-    cd /usr/ports/security/tls-check && make install clean
-    # Or as package
-    pkg install security/tls-check
+Installing TLS-Check on FreeBSD is easy and always up to date to the latest release. Login as root and type:
 
-### Manual installation on Linux/Unix/…: 
+````
+# Fast binary install from packages 
+pkg install security/tls-check
+
+# or: flexible individual install from ports
+cd /usr/ports/security/tls-check && make install clean
+````
+
+### Manual installation on Linux, Solaris, AIX, OS X, …: 
+
+On Linux, OS X and other operating systems you have to install all dependencies and TLS-Check manually.
 
 #### Install the following dependencies:
 
@@ -75,7 +83,14 @@ If you want to use IDN domain names (with characters other then US-ASCII, e.g. �
 TLS-Check is written in Perl and should work with an old Perl 5.10 and is tested with 5.16 and up.
 
 * Perl is usually installed by your OS. Some Linux distributions deliver broken Perl packages and maybe you should install the perl default modules `perl-modules`. (untested, please report issues here)
-* If you don't want to (or can't) install all dependencies with the package manager of your OS, it may be better to install your own Perl to avoid conflicts with system packages. The best way is to use [perlbrew](http://perlbrew.pl) for this. A Perl without ithreads and full optimizations (-O3) is recommended.
+* If you don't want to (or can't) install all dependencies with the package manager of your OS, it may be better to install your own Perl to avoid conflicts with system packages. The best way is to use [perlbrew](http://perlbrew.pl) for this. A latest Perl without ithreads and full optimizations (-O3) is recommended.
+
+````
+# install perlbrew and the latest stable perl
+sudo cpan App::perlbrew        # or, if you trust them: wget -O - https://install.perlbrew.pl | bash
+perlbrew init
+perlbrew install stable --Doptimize='-O3 -march=native -mtune=native' --switch 
+````
 
 ##### • `Module::Build`, Perl Build manager
 
