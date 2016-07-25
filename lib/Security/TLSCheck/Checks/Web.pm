@@ -35,7 +35,7 @@ Security::TLSCheck::Checks::Web - (Basic) HTTP and HTTPS Checks
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 640 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS

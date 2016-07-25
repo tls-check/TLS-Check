@@ -40,7 +40,7 @@ our @EXPORT = qw(
 
 
 #<<<
-my $BASE_VERSION = "0.1"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 652 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.1"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 658 $ =~ /(\d+)/xg );
 #>>>
 
 =head1 VERSION

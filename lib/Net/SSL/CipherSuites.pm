@@ -20,12 +20,12 @@ use Readonly;
 
 =head1 VERSION
 
-Version 0.8, $Revision: 626 $
+Version 0.8, $Revision: 658 $
 
 =cut
 
 #<<<
-my $BASE_VERSION = "0.8"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 626 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.8"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 658 $ =~ /(\d+)/xg );
 #>>>
 
 

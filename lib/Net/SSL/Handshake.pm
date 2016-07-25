@@ -120,11 +120,11 @@ Net::SSL::Handshake - SSL Handshake on an existing connection or open a new one
 
 =head1 VERSION
 
-Version 0.1.x, $Revision: 646 $
+Version 0.1.x, $Revision: 658 $
 
 =cut
 
-use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 646 $ =~ /(\d+)/xg ) );
+use version; our $VERSION = qv( "v0.1." . ( sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg ) );
 
 
 

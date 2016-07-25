@@ -15,7 +15,7 @@ Security::TLSCheck::Checks::FinalScore - Creates a summary score out of the othe
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 640 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 658 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS
