@@ -36,7 +36,7 @@ Readonly my $COL_RESULT_MEDIAN     => 12;
 Readonly my $COL_RESULT_GROUP      => 13;
 
 
-Readonly my $HACKY_CONF__NO_CATEGORIES => 0;       # 1;
+Readonly my $HACKY_CONF__NO_CATEGORIES => 1;
 
 
 
@@ -154,6 +154,10 @@ sub summarize_cipher
    summarize( "… bieten schwache kryptografische Verfahren an (z.B. RC4, 56 Bit, ...)",             $class => "Supports weak ciphers", @rest );
    summarize( "… bieten mittelschwache kryptografische Verfahren an",                               $class => "Supports medium ciphers", @rest );
    summarize( "… bieten keine schwachen/mittelschwachen kryptografischen Verfahren an",             $class => "Supports no weak/medium cipher", @rest );
+   summarize( "… Experimental: Schwache Cipher-Suiten ohne Beast/CBC anfällige",                    $class => "Supports weak ciphers, no Beast/CBC", @rest); 
+   summarize( "… Experimental: Unterstützt Beast/CBC afällige Cipher",                              $class => "Supports Beast/CBC ciphers", @rest); 
+   summarize( "… Experimental: Mittelschwache, aber inklusive Beast/BCB",                           $class => "Supports medium ciphers, including Beast/CBC", @rest); 
+   summarize( "… Experimental: Schwache Cipher-Suiten, außer wenn Bettercrypto B Empfehlung",       $class => "Supports weak ciphers, excluding Bettercrypto B", @rest); 
    summarize( "… bieten nur empfohlene kompatible kryptografische Verfahren an (Bettercrypto B)",   $class => "Supports Only BC b", @rest );
    summarize( "… halten die BSI-Vorgaben für kryptografische Verfahren ein",                        $class => "Supports Only BSI PFS", @rest );
    summarize( "… bieten mindestens eines der vom BSI vorgegebenen kryptographischen Verfahren an",  $class => "Supports Any BSI PFS", @rest );

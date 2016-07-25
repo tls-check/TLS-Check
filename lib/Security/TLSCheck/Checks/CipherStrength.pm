@@ -73,13 +73,7 @@ my $key_figures =
    { name => "Supports medium ciphers, including Beast/CBC",    type => "flag",  source => "supports_medium_ciphers_withcbc",         description => "Experimental: Server supports medium ciphers, including Beast-CBC" }, 
    { name => "Supports weak ciphers, excluding Bettercrypto B", type => "flag",  source => "supports_weak_ciphers_no_bettercrypto_b", description => "Experimental: Server supports weak ciphers, excluding Bettercrypto B" }, 
    
-
-#      supports_weak_ciphers_no_cbc
-#      supports_beast_cbc_ciphers
-#      supports_medium_ciphers_withcbc
-#      supports_weak_ciphers_no_bettercrypto_b 
-
-
+   
    { name => "Supports ECDSA keys",        type => "flag",  source => "supports_ec_keys",         description => "Server supports elliptic courve keys" }, 
    { name => "Supports only ECDSA keys",   type => "flag",  source => "supports_ec_keys",         description => "Server supports only elliptic courve keys" }, 
    { name => "Supports PFS cipher(s)",     type => "flag",  source => "supports_pfs",             description => "Server supports at least one cipher with perforct forward secrecy" }, 

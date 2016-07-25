@@ -26,6 +26,7 @@ Security-TLS-Check-*.tar.gz
 /logs/
 /ext-doc/
 /result/
+/results/
 out.html
 run-localdummy.sh
 testresult.csv
