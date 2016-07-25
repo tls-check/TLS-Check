@@ -17,7 +17,7 @@ Security::TLSCheck::Checks::AgeDE - Checks, if a host has an age-de.xml file
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 640 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 662 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS
@@ -124,7 +124,11 @@ A simple check, if there is really an age-de.xml.
 sub has_age_declaration
    {
    my $self = shift;
-   return 1 if ( $self->age_de_xml // "" ) =~ m{<age-declaration}ix;
+   if ( ( $self->age_de_xml // "" ) =~ m{<age-declaration}ix )
+      {
+      TRACE "FOUND age-Declaration for " . $self->www;    # Debug
+      return 1;
+      }
    return;
    }
 
@@ -138,6 +142,7 @@ sub default_age
    {
    my $self = shift;
    my ($default_age) = ( $self->age_de_xml // "" ) =~ m{ <default-age>\s* (\d+) }sx;
+   TRACE "FOUND default-age '$default_age' for " . $self->www if defined $default_age;
    return $default_age;
    }
 
@@ -152,6 +157,7 @@ sub min_age
    {
    my $self = shift;
    my ($min_age) = ( $self->age_de_xml // "" ) =~ m{ <min-age>\s* (\d+) }sx;
+   TRACE "FOUND min-age '$min_age' for " . $self->www if defined $min_age;
    return $min_age;
    }
 

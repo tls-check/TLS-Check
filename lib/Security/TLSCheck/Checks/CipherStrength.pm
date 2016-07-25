@@ -18,7 +18,7 @@ Security::TLSCheck::Checks::CipherStrength - Check Strength of CipherSuites and 
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 647 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 662 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS
@@ -67,6 +67,13 @@ my $key_figures =
    { name => "Supports medium ciphers",    type => "flag",  source => "supports_medium",          description => "Server supports medium ciphers ()" }, 
    { name => "Supports no weak/medium cipher", type => "flag",source=>"supports_no_weakmedium",   description => "Server supports no weak/medium, only high or unknown ciphers" }, 
 
+   # TODO: experimental Temp ciphers, CBC ...
+   { name => "Supports weak ciphers, no Beast/CBC",             type => "flag",  source => "supports_weak_ciphers_no_cbc",            description => "Experimental: Server supports weak ciphers, excluding Beast-CBC", }, 
+   { name => "Supports Beast/CBC ciphers",                      type => "flag",  source => "supports_beast_cbc_ciphers",              description => "Experimental: Server supports Beast-CBC ciphers", }, 
+   { name => "Supports medium ciphers, including Beast/CBC",    type => "flag",  source => "supports_medium_ciphers_withcbc",         description => "Experimental: Server supports medium ciphers, including Beast-CBC" }, 
+   { name => "Supports weak ciphers, excluding Bettercrypto B", type => "flag",  source => "supports_weak_ciphers_no_bettercrypto_b", description => "Experimental: Server supports weak ciphers, excluding Bettercrypto B" }, 
+   
+   
    { name => "Supports ECDSA keys",        type => "flag",  source => "supports_ec_keys",         description => "Server supports elliptic courve keys" }, 
    { name => "Supports only ECDSA keys",   type => "flag",  source => "supports_ec_keys",         description => "Server supports only elliptic courve keys" }, 
    { name => "Supports PFS cipher(s)",     type => "flag",  source => "supports_pfs",             description => "Server supports at least one cipher with perforct forward secrecy" }, 
@@ -121,6 +128,11 @@ has properties => ( is => "rw", isa => "Net::SSL::GetServerProperties",
       supports_weak
       supports_medium
       supports_no_weakmedium
+      
+      supports_weak_ciphers_no_cbc
+      supports_beast_cbc_ciphers
+      supports_medium_ciphers_withcbc
+      supports_weak_ciphers_no_bettercrypto_b 
       
       firefox_cipher   
       safari_cipher    

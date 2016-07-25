@@ -28,12 +28,12 @@ use Readonly;
 
 =head1 VERSION
 
-Version 0.8, $Revision: 640 $
+Version 0.8, $Revision: 662 $
 
 =cut
 
 #<<<
-my $BASE_VERSION = "0.8"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 640 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "0.8"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 662 $ =~ /(\d+)/xg );
 #>>>
 
 
@@ -119,6 +119,12 @@ has weak_ciphers            => ( is => "rw", isa => "Net::SSL::CipherSuites",  )
 has medium_ciphers          => ( is => "rw", isa => "Net::SSL::CipherSuites",  );
 # has good_ciphers            => ( is => "rw", isa => "Net::SSL::CipherSuites",  );
 
+# Temp fix/test
+has weak_ciphers_no_cbc     => ( is => "rw", isa => "Net::SSL::CipherSuites",  );
+has beast_cbc_ciphers       => ( is => "rw", isa => "Net::SSL::CipherSuites",  );
+has medium_ciphers_withcbc  => ( is => "rw", isa => "Net::SSL::CipherSuites",  );
+has weak_ciphers_no_bettercrypto_b => ( is => "rw", isa => "Net::SSL::CipherSuites",  );
+
 has supports_sslv2          => ( is => "rw", isa => "Bool", );
 has supports_sslv3          => ( is => "rw", isa => "Bool", );
 has supports_tlsv1          => ( is => "rw", isa => "Bool", );
@@ -176,6 +182,7 @@ Readonly my $SCORE_OSAFT_FULL      => 100;
 Readonly my $SCORE_OSAFT_GOOD      => 80;
 Readonly my $SCORE_OSAFT_LOWMEDIUM => 40;
 Readonly my $SCORE_OSAFT_LOW       => 20;
+Readonly my $SCORE_OSAFT_LOW11     => 11;          # O-Saft Scrore 11, for check together with CBC
 Readonly my $SCORE_OSAFT_VERYLOW   => 10;
 Readonly my $SCORE_OSAFT_BAD       => 0;
 
@@ -287,19 +294,52 @@ sub get_properties                                 ## no critic (Subroutines::Pr
                or ( ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) < $SCORE_OSAFT_LOWMEDIUM ) )
    } @{ $self->accepted_ciphers->ciphers };
 
+
    my @medium_ciphers = grep {
       ( ( $ARG->{scores}{osaft_openssl} // "" ) =~ m{^medium}ix )
          or (     ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) < $SCORE_OSAFT_GOOD
               and ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) >= $SCORE_OSAFT_LOWMEDIUM )
    } @{ $self->accepted_ciphers->ciphers };
 
+   # TOTO:
+   # To circumvent above problem, some experimental Tests!
+   # => temporary, until there is a better classification
+
+   # additional test:
+   #  * Weak not including CBC (O-Saft)
+   #  * Beast CBC
+   #  * Medium Including CBC
+   #  * weak including CBC, without BC B
+
+   # weak variant, without CBC
+   my @weak_ciphers_no_cbc
+      = grep { not( ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) == $SCORE_OSAFT_LOW11 and $ARG->{name} =~ m{CBC}x ) }
+      @weak_ciphers;
+
+   my @beast_cbc_ciphers
+      = grep { ( ( $ARG->{scores}{osaft} // $SCORE_OSAFT_FULL ) == $SCORE_OSAFT_LOW11 and $ARG->{name} =~ m{CBC}x ) }
+      @weak_ciphers;
+
+   # Medium, including the former weak CBC
+   # $SCORE_OSAFT_LOW11
+   my @medium_ciphers_withcbc = ( @medium_ciphers, @beast_cbc_ciphers );
+
+   # weak variant, excluding Bettercrypto B
+   my @weak_ciphers_no_bettercrypto_b = grep { not( $ARG->{is}{bettercrypto_b} ) } @weak_ciphers;
+
 
 
    # TODO:
-   # really make objects here? this may be
+   # really make objects here? this may be faster without, but this is more comfortable ...
    $self->very_weak_ciphers( Net::SSL::CipherSuites->new( ciphers => \@very_weak_ciphers, ) );
    $self->weak_ciphers( Net::SSL::CipherSuites->new( ciphers => \@weak_ciphers, ) );
    $self->medium_ciphers( Net::SSL::CipherSuites->new( ciphers => \@medium_ciphers, ) );
+
+   $self->weak_ciphers_no_cbc( Net::SSL::CipherSuites->new( ciphers => \@weak_ciphers_no_cbc, ) );
+   $self->beast_cbc_ciphers( Net::SSL::CipherSuites->new( ciphers => \@beast_cbc_ciphers, ) );
+   $self->medium_ciphers_withcbc( Net::SSL::CipherSuites->new( ciphers => \@medium_ciphers_withcbc, ) );
+   $self->weak_ciphers_no_bettercrypto_b( Net::SSL::CipherSuites->new( ciphers => \@weak_ciphers_no_bettercrypto_b, ) );
+
 
    # Not allowed for privacy reasons!
    #   TRACE "INTERNALDEBUG: ${ \$self->host } supports very weak ciphers: " . $self->very_weak_ciphers->names
@@ -654,6 +694,10 @@ sub _calculate_score                               ## no critic (Subroutines::Pr
 
 ...
 
+=head2 supports_weak_ciphers_no_cbc, supports_beast_cbc_ciphers, supports_medium_ciphers_withcbc, supports_weak_ciphers_no_bettercrypto_b 
+
+...
+
 =cut
 
 sub supports_very_weak
@@ -681,6 +725,33 @@ sub supports_no_weakmedium
    return 0;
    }
 
+# TODO:
+# test this ones; see above
+sub supports_weak_ciphers_no_cbc
+   {
+   my $self = shift;
+   return $self->weak_ciphers_no_cbc->count;
+   }
+
+sub supports_beast_cbc_ciphers
+   {
+   my $self = shift;
+   return $self->beast_cbc_ciphers->count;
+   }
+
+sub supports_medium_ciphers_withcbc
+   {
+   my $self = shift;
+   return $self->medium_ciphers_withcbc->count;
+   }
+
+sub supports_weak_ciphers_no_bettercrypto_b
+   {
+   my $self = shift;
+   return $self->weak_ciphers_no_bettercrypto_b->count;
+   }
+
+
 
 =head2 check_all_ciphers($ssl_version)
 
@@ -699,8 +770,11 @@ sub check_all_ciphers
 
    my $count = 0;
 
+   # BUG:
+   # TODO: bettercrypto.org nginx server: with length 86 find all cipher suites, with 88 or more not. WTF!
    foreach my $ciphers_part ( $self->ciphers_to_check->split_into_parts )
       {
+
       while (1)
          {
          if ( $self->accepted_ciphers->count > 360 )
