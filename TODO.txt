@@ -34,6 +34,7 @@
 
 * Build ready-to-use images for VMware, VirtualBox, iocage etc.
 
+* Check result when connecting Exim with unreadable cert
 
 * Loop through IP ranges an check IP-Adresses
 
