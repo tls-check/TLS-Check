@@ -20,7 +20,7 @@ Version 0.2.x
 =cut
 
 #<<<
-my $BASE_VERSION = "1.0"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 658 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "1.0"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 676 $ =~ /(\d+)/xg );
 #>>>
 
 
@@ -64,7 +64,7 @@ $DATADIR = "$FindBin::Bin/../files/DomainFilter" if not defined $DATADIR;    # o
 # Source: https://data.iana.org/TLD/tlds-alpha-by-domain.txt
 my %valid_tlds = map { lc($ARG) => 1 } grep { not m{ ^ \s* [#] }x } io("$DATADIR/tlds-alpha-by-domain.txt")->chomp->slurp;
 my $tlds_regex_or = join( q(|), keys %valid_tlds );
-my $FORBIDDEN_DOMAINS = qr{ (t[-\s]?online|arcor|web|gmx|hotmail|yahoo) }x;
+my $FORBIDDEN_DOMAINS = qr{ (t[-\s]?online|arcor|web|gmx|hotmail|yahoo|facebook|twitter|youtube|googlemail|outlook|xing|google|instagram|blogspot) }x;
 
 
 sub filter_domain
@@ -82,7 +82,7 @@ sub filter_domain
 
    $domain =~ s{,}{.}gx;
 
-   return if $domain =~ m{ ( ^ | [.@] ) $FORBIDDEN_DOMAINS [.] (de|com) }ox;
+   return if $domain =~ m{ ( ^ | [.@] ) $FORBIDDEN_DOMAINS [.] (de|com|net) }ox;
 
    $domain =~ s{^www\s}{}x;                        # "www test.de"
    $domain =~ s{[-\s:]($tlds_regex_or)$}{.$1}ox;   # "test de" "test:de", "test-de", com, (all TLDs)

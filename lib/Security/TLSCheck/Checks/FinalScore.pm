@@ -87,7 +87,7 @@ sub final_web_score
    my $dns        = $self->other_check("Security::TLSCheck::Checks::DNS");
 
    return 0 unless $web->https_active;
-   return -10 if $heartbleed->https_vulnerable;
+   return -10 if $heartbleed && $heartbleed->https_vulnerable;
 
    my $score = $ciphers->score;
    $score -= 10 unless $web->https_cert_verified;

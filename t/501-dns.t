@@ -8,6 +8,7 @@ use Test::Exception;
 use Test::MockObject;
 use Test::MockObject::Extends;
 use Test::Differences;
+use Test::Deep;
 
 use English qw( -no_match_vars );
 
@@ -325,7 +326,7 @@ eq_or_diff( $check->mx, [ map { "mx$ARG.$domain" } 1 .. 3 ], "mx for $domain" );
 eq_or_diff( $check->ns,       [qw()],                        "ns for $domain" );
 eq_or_diff( $check->ipv4,     [qw( 127.23.42.21 )],          "ipv4 for $domain" );
 eq_or_diff( $check->ipv6,     [qw()],                        "ipv6 for $domain" );
-eq_or_diff( $check->ipv4_www, [qw()],                        "ipv4_www for $domain" );
+eq_or_diff( $check->ipv4_www, [qw( 127.23.42.21 )],          "ipv4_www for $domain" );
 eq_or_diff( $check->ipv6_www, [qw()],                        "ipv6_www for $domain" );
 eq_or_diff( $check->ipv4_ns,  [qw()],                        "ipv4_ns for $domain" );
 eq_or_diff( $check->ipv6_ns,  [qw()],                        "ipv6_ns for $domain" );
@@ -473,14 +474,14 @@ eq_or_diff( [ $check->all_ipv6_mx ],  $check->ipv6_mx,  "ipv6_mx via all_ipv6_mx
 # values
 eq_or_diff( $check->ns, [qw()], "ns for $domain" );
 eq_or_diff( $check->mx, [qw()], "mx for $domain" );
-eq_or_diff( [ sort $check->all_ipv4 ], [qw( 127.23.42.50 127.23.42.51 )], "ipv4 for $domain" );
-eq_or_diff( [ sort $check->all_ipv6 ], [qw( 2001:db8:0:0:23:42:2:1 2001:db8:0:0:23:42:2:2)], "ipv6 for $domain" );
-eq_or_diff( $check->ipv4_www, [qw()], "ipv4_www for $domain" );
-eq_or_diff( $check->ipv6_www, [qw()], "ipv6_www for $domain" );
-eq_or_diff( $check->ipv4_ns,  [qw()], "ipv4_ns for $domain" );
-eq_or_diff( $check->ipv6_ns,  [qw()], "ipv6_ns for $domain" );
-eq_or_diff( $check->ipv4_mx,  [qw()], "ipv4_mx for $domain" );
-eq_or_diff( $check->ipv6_mx,  [qw()], "ipv6_mx for $domain" );
+cmp_bag( [ sort $check->all_ipv4 ], [qw( 127.23.42.50 127.23.42.51 )], "ipv4 for $domain" );
+cmp_bag( [ sort $check->all_ipv6 ], [qw( 2001:db8:0:0:23:42:2:1 2001:db8:0:0:23:42:2:2 )], "ipv6 for $domain" );
+cmp_bag( $check->ipv4_www, [qw( 127.23.42.50 127.23.42.51 )],                     "ipv4_www for $domain" );
+cmp_bag( $check->ipv6_www, [qw( 2001:db8:0:0:23:42:2:1 2001:db8:0:0:23:42:2:2 )], "ipv6_www for $domain" );
+eq_or_diff( $check->ipv4_ns,  [qw()],                                                "ipv4_ns for $domain" );
+eq_or_diff( $check->ipv6_ns,  [qw()],                                                "ipv6_ns for $domain" );
+eq_or_diff( $check->ipv4_mx,  [qw()],                                                "ipv4_mx for $domain" );
+eq_or_diff( $check->ipv6_mx,  [qw()],                                                "ipv6_mx for $domain" );
 
 
 
@@ -537,7 +538,7 @@ eq_or_diff( $check->mx,       [qw()],                         "mx for $domain" )
 eq_or_diff( $check->ipv4,     [qw()],                         "ipv4 for $domain" );
 eq_or_diff( $check->ipv6,     [qw( 2001:db8:0:0:23:42:1:1 )], "ipv6 for $domain" );
 eq_or_diff( $check->ipv4_www, [qw()],                         "ipv4_www for $domain" );
-eq_or_diff( $check->ipv6_www, [qw()],                         "ipv6_www for $domain" );
+eq_or_diff( $check->ipv6_www, [qw( 2001:db8:0:0:23:42:1:1 )], "ipv6_www for $domain" );
 eq_or_diff( $check->ipv4_ns,  [qw()],                         "ipv4_ns for $domain" );
 eq_or_diff( $check->ipv6_ns,  [qw()],                         "ipv6_ns for $domain" );
 eq_or_diff( $check->ipv4_mx,  [qw()],                         "ipv4_mx for $domain" );

@@ -18,7 +18,7 @@ Security::TLSCheck::Checks::CipherStrength - Check Strength of CipherSuites and 
 
 =cut
 
-use version; our $VERSION = sprintf "%d", q$Revision: 662 $ =~ /(\d+)/xg;
+use version; our $VERSION = sprintf "%d", q$Revision: 676 $ =~ /(\d+)/xg;
 
 
 =head1 SYNOPSIS

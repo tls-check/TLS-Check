@@ -104,7 +104,7 @@ has checks            => (is => "rw", isa => "ArrayRef[Str]", default => sub { \
 has user_agent_name   => (is => "ro", isa => "Str",           default => "TLS-Check/$VERSION",                         documentation => "UserAgent string for web checks" ) ;
 has my_hostname       => (is => "ro", isa => "Str",           lazy_build => 1,                                         documentation => "Hostname for SMTP EHLO etc." ); 
 has timeout           => (is => "ro", isa => "Int",           default => 60,                                           documentation => "Timeout for networking" );
-has separator         => (is => "ro", isa => "Str",           default => q{;},                                         documentation => "CSV Separator char(s)" );
+has separator         => (is => "ro", isa => "Str",           default => qq{;},                                        documentation => "CSV Separator char(s)" );
 has files             => (is => "ro", isa => "ArrayRef[Str]", lazy_build => 1,                        auto_deref => 1, documentation => "List of files with domain names to check" );
 has verbose           => (is => "ro", isa => "Bool",          default => 0,                                            documentation => "Verbose Output/Logging" );
 has temp_out_interval => (is => "ro", isa => "Int",           default => 250,                                          documentation => "Produce temporary output every # Domains");

@@ -15,7 +15,7 @@ Version 1.0.2, $Revision: 658 $
 =cut
 
 #<<<
-my $BASE_VERSION = "1.0.2"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 658 $ =~ /(\d+)/xg );
+my $BASE_VERSION = "1.0.3"; use version; our $VERSION = qv( sprintf "$BASE_VERSION.%d", q$Revision: 658 $ =~ /(\d+)/xg );
 #>>>
 
 
