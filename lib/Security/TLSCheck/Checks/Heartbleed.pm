@@ -128,7 +128,7 @@ sub _check_www
    elsif ( $rc == $RC_VULNERABLE )
       {
       # Not allowed for privacy reasons!
-      # TRACE "UUPS! Webserver $www is VULNERABLE!!!";
+      TRACE "UUPS! Webserver $www is VULNERABLE!!!";
       $self->https_supported(1);
       $self->https_vulnerable(1);
       $self->https_other_error(0);
@@ -177,7 +177,7 @@ sub _check_mail
       elsif ( $rc == $RC_VULNERABLE )
          {
          # Not allowed for privacy reasons!
-         #DEBUG "UUPS! MX $mx is VULNERABLE!!!";
+         DEBUG "UUPS! MX $mx is VULNERABLE!!!";
          $count_mx_tls++;
          $count_mx_vulnerable++;
          }
