@@ -33,7 +33,7 @@ my $builder = Module::Build->new(
                   'Security::TLSCheck'                    => [ 'conf', 'bin/ext', ],
                 },
 
-                },
+   },
 
    # TODO:
    # Check minimal required versions!
@@ -41,29 +41,34 @@ my $builder = Module::Build->new(
    # usually it should work with older versions of this modules, but this
    # is not tested.
    requires => {
-                 'Moose'                 => 2.1213,
-                 'MooseX::Getopt'        => 0.65,
-                 'MooseX::SimpleConfig'  => 0.10,
-                 'Net::DNS'              => 0.80,
-                 'Log::Log4perl'         => 1.44,
-                 'Net::LibIDN'           => 0.12,             # Needed by Net::DNS
-                 'Net::DNS::RR::DS'      => 0.20,
-                 'LWP::Protocol::https'  => 6.06,
-                 'Text::CSV_XS'          => 1.11,
-                 'IO::All'               => 0.79,
-                 'Config::General'       => 2.56,
-                 'Readonly'              => 2,
-                 'Mozilla::CA'           => 20141217,
-                 'Net::SMTP'             => 3.04,
-                 'IO::Socket::Timeout'   => 0.29,
-                 'File::ShareDir'        => 1.102,
-                 'IO::Socket::SSL'       => 2.016,
-                 'LWP::UserAgent'        => 6.06,
-                 'PerlIO::via::Timeout'  => 0.30,
-                 'Parallel::ForkManager' => 1.11,             # make this OPTIONAL!
-                 'File::HomeDir'         => 1.0,
-                 'Net::IDN::Encode'      => 2.202,            # maybe replace by Net::LibIDN
-                 'autodie'               => 2.23,             # at least version from Perl 5.20, because of sleep bugs
+                 'Moose'                    => 2.1213,
+                 'MooseX::Getopt'           => 0.65,
+                 'MooseX::SimpleConfig'     => 0.10,
+                 'Net::DNS'                 => 0.80,
+                 'Log::Log4perl'            => 1.44,
+                 'Net::LibIDN'              => 0.12,          # Needed by Net::DNS
+                 'Net::DNS::RR::DS'         => 0.20,
+                 'LWP::Protocol::https'     => 6.06,
+                 'Text::CSV_XS'             => 1.11,
+                 'IO::All'                  => 0.79,
+                 'Config::General'          => 2.56,
+                 'Readonly'                 => 2,
+                 'Mozilla::CA'              => 20141217,
+                 'Net::SMTP'                => 3.04,
+                 'IO::Socket::Timeout'      => 0.29,
+                 'File::ShareDir'           => 1.102,
+                 'IO::Socket::SSL'          => 2.016,
+                 'LWP::UserAgent'           => 6.06,
+                 'PerlIO::via::Timeout'     => 0.30,
+                 'Parallel::ForkManager'    => 1.11,          # make this OPTIONAL!
+                 'File::HomeDir'            => 1.0,
+                 'Net::IDN::Encode'         => 2.202,         # maybe replace by Net::LibIDN
+                 'autodie'                  => 2.23,          # at least version from Perl 5.20, because of sleep bugs
+                 'LWP::Protocol::https.pm ' => 6.0,
+                 'IO::Socket::Timeout'      => 0.32,
+                 'Net::IDN::Encode'         => 2.400,
+                 'Config::General'          => 2.47,
+                 'Net::DNS'                 => 1.12,
                },
    add_to_cleanup     => ['Security-TLSCheck-*'],
    create_makefile_pl => 'traditional',
