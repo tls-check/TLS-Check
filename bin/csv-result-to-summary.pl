@@ -35,8 +35,8 @@ Readonly my $COL_RESULT_PERCENT    => 11;
 Readonly my $COL_RESULT_MEDIAN     => 12;
 Readonly my $COL_RESULT_GROUP      => 13;
 
-
-Readonly my $HACKY_CONF__NO_CATEGORIES => 1;
+# TODO: read from CLI parameter!
+Readonly my $HACKY_CONF__NO_CATEGORIES => 0;
 
 
 
@@ -49,7 +49,8 @@ my @categories;
 
 init();
 
-my $out_csv = Text::CSV_XS->new( { binary => 1, sep_char => q{;}, } );
+# TODO: sep_char via CLI parameter!
+my $out_csv = Text::CSV_XS->new( { binary => 1, sep_char => qq{;}, } );
 
 if ($HACKY_CONF__NO_CATEGORIES)
    {
@@ -104,6 +105,12 @@ summarize( "Gesamt-Score nach Einbeziehung aller Ergebnisse",                   
 
 # TODO: Selbstsigniert
 
+head("");
+head("Sonstiges usw");
+
+
+summarize( "Webserver via IPv6", DNS   => "Domain IPv6");
+summarize( "Hat ein age-de.xml", AgeDE => "Looks like age-de.xml");
 
 
 head("");
