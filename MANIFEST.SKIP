@@ -77,7 +77,7 @@
 
 # my own, local
 ext-doc
-^result\b
+^results?\b
 out\.html
 run-localdummy.sh$
 testresult.csv
@@ -87,6 +87,7 @@ testresult.csv
 \bwork\b
 \blogs\b
 ^Makefile.PL
+
 
 # Eclipse -- NO, include it!
 # \.includepath$
